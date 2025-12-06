@@ -1,0 +1,257 @@
+.register-page {
+  @apply min-h-[calc(100vh-80px)] flex items-center justify-center px-4 lg:px-8 py-10;
+  background-color: #020617;
+  background-image:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.14), transparent 60%);
+}
+
+.register-shell {
+  @apply w-full max-w-6xl grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)];
+}
+
+.register-left {
+  @apply relative flex flex-col gap-6 text-slate-50;
+}
+
+.register-pill {
+  @apply inline-flex items-center rounded-full bg-slate-900/70 border border-sky-400/40 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide;
+}
+
+.register-title {
+  @apply text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight;
+  letter-spacing: -0.03em;
+}
+
+.register-title-accent {
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.register-subtitle {
+  @apply text-sm md:text-base text-slate-300 max-w-xl;
+}
+
+.register-highlights {
+  @apply grid gap-4 md:grid-cols-3 text-sm;
+}
+
+.register-highlight {
+  @apply rounded-2xl bg-slate-900/70 border border-slate-700/70 p-4 shadow-lg shadow-slate-900/40;
+}
+
+.register-highlight h3 {
+  @apply text-sm font-semibold text-slate-50 mb-1;
+}
+
+.register-highlight p {
+  @apply text-xs md:text-sm text-slate-300;
+}
+
+.register-footnote {
+  @apply text-xs md:text-sm text-slate-400 mt-2;
+}
+
+.register-footnote a {
+  @apply text-sky-300 font-semibold hover:text-sky-200;
+}
+
+.register-right {
+  @apply flex items-center justify-center;
+}
+
+.register-card {
+  @apply w-full rounded-3xl bg-slate-950/90 border border-slate-800/90 px-6 py-6 lg:px-8 lg:py-7 text-slate-50;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+/* progress bar */
+
+.register-steps {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.step-item {
+  @apply flex items-center gap-2 text-xs text-slate-400;
+}
+
+.step-item-active .step-circle {
+  @apply bg-sky-500 text-slate-950 border-sky-400;
+}
+
+.step-item-active .step-label {
+  @apply text-slate-100;
+}
+
+.step-circle {
+  @apply h-6 w-6 rounded-full border border-slate-600 flex items-center justify-center text-[11px] font-semibold bg-slate-900;
+}
+
+.step-label {
+  @apply text-[11px] uppercase tracking-wide;
+}
+
+.step-line {
+  @apply flex-1 h-px bg-gradient-to-r from-sky-500/50 via-slate-600 to-slate-700;
+}
+
+.register-card-header h2 {
+  @apply text-xl font-bold text-slate-50;
+}
+
+.register-card-header p {
+  @apply text-xs text-slate-400 mt-1;
+}
+
+/* micro copy */
+
+.register-microcopy-top {
+  @apply mt-2 mb-3 text-[11px] text-sky-200 bg-sky-500/10 border border-sky-400/30 rounded-2xl px-3 py-2;
+}
+
+.register-microcopy-bottom {
+  @apply mt-3 text-[11px] text-slate-400 text-center;
+}
+
+.register-form {
+  @apply mt-2 flex flex-col gap-4 text-sm;
+}
+
+.register-row {
+  @apply flex flex-col gap-3 md:flex-row;
+}
+
+.register-row-role,
+.register-row-plan {
+  @apply md:flex-col;
+}
+
+.register-field {
+  @apply flex-1 flex flex-col gap-1;
+}
+
+.register-field label {
+  @apply text-xs font-semibold text-slate-200;
+}
+
+.register-field input {
+  @apply h-10 rounded-xl border border-slate-700 bg-slate-900/70 px-3 text-sm text-slate-50 outline-none;
+  @apply focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 focus:bg-slate-900 transition;
+}
+
+.field-error {
+  @apply border-rose-500 bg-rose-900/40;
+}
+
+.error-text {
+  @apply text-[11px] text-rose-400 mt-0.5;
+}
+
+.helper-text {
+  @apply text-[11px] text-slate-400 mt-0.5;
+}
+
+.role-chips {
+  @apply flex flex-wrap gap-2 mt-1;
+}
+
+.role-chip {
+  @apply px-3 py-1.5 rounded-full text-[11px] font-semibold border border-slate-700 bg-slate-900 text-slate-200;
+  @apply hover:border-sky-400 hover:text-sky-200 hover:bg-slate-900/80 cursor-pointer;
+  transition: all 0.15s ease;
+}
+
+.role-chip-active {
+  @apply bg-sky-600 text-white border-sky-500 shadow-md shadow-sky-500/40;
+}
+
+.plan-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1;
+}
+
+.plan-card {
+  @apply rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-left cursor-pointer flex flex-col gap-1;
+  @apply hover:border-sky-400 hover:bg-slate-900 transition;
+}
+
+.plan-card-active {
+  @apply border-sky-500 bg-slate-900 shadow-md shadow-sky-500/40 ring-1 ring-sky-500/50;
+}
+
+.plan-name {
+  @apply text-xs font-semibold text-slate-200 uppercase tracking-wide;
+}
+
+.plan-price {
+  @apply text-lg font-bold text-slate-50;
+}
+
+.plan-note {
+  @apply text-[11px] text-slate-400;
+}
+
+.register-info {
+  @apply mt-1 rounded-2xl bg-sky-500/10 border border-sky-400/40 px-4 py-3 flex flex-col gap-1 text-[11px] md:text-xs text-sky-100;
+}
+
+.register-info-badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full bg-sky-500 text-slate-950 text-[10px] font-semibold uppercase tracking-wide;
+}
+
+.checkbox-line {
+  @apply flex items-start gap-2 text-xs text-slate-200;
+}
+
+.checkbox-line input[type='checkbox'] {
+  @apply mt-1 h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-500;
+}
+
+.register-submit {
+  @apply mt-2 w-full inline-flex items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-semibold text-white;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.55);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.register-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.65);
+}
+
+.register-submit:disabled {
+  @apply opacity-60 cursor-not-allowed;
+  box-shadow: none;
+}
+
+.register-small-text {
+  @apply mt-2 text-[11px] text-slate-400 text-center;
+}
+
+@media (max-width: 1024px) {
+  .register-shell {
+    @apply grid-cols-1;
+  }
+
+  .register-left {
+    @apply order-2;
+  }
+
+  .register-right {
+    @apply order-1;
+  }
+
+  .register-card {
+    @apply max-w-xl mx-auto;
+  }
+
+  .register-row {
+    @apply flex-col;
+  }
+}

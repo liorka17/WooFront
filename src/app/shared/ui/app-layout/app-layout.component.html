@@ -1,0 +1,21 @@
+<div class="min-h-screen flex bg-slate-950 text-slate-50">
+  <aside class="w-64 border-r border-slate-800 p-4 flex flex-col gap-4">
+    <div class="font-bold text-lg mb-4">Control Panel</div>
+
+    <nav class="flex flex-col gap-2">
+      <a routerLink="/app/dashboard" routerLinkActive="font-semibold">My Dashboard</a>
+      <a routerLink="/app/profile" routerLinkActive="font-semibold">Profile</a>
+      <a routerLink="/app/billing" routerLinkActive="font-semibold">Billing</a>
+      <a routerLink="/app/chat" routerLinkActive="font-semibold">Chat Demo</a>
+
+      <hr class="border-slate-800 my-2">
+
+      <a routerLink="/admin/overview" routerLinkActive="font-semibold">Admin Overview</a>
+      <a routerLink="/admin/users" routerLinkActive="font-semibold">Admin Users</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    <router-outlet></router-outlet>
+  </main>
+</div>

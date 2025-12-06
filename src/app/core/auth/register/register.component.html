@@ -1,1 +1,286 @@
-<p>register works!</p>
+<section class="register-page">
+  <div class="register-shell">
+    <div class="register-left">
+      <div class="register-pill">
+        WooCommerce MCP AI Assistant
+      </div>
+
+      <h1 class="register-title">
+        Create your
+        <span class="register-title-accent">MCP AI</span>
+        account
+      </h1>
+
+      <p class="register-subtitle">
+        One place to manage your WooCommerce AI assistant, connect stores, see usage and control every
+        MCP tool the bot can run.
+      </p>
+
+      <div class="register-highlights">
+        <div class="register-highlight">
+          <h3>Built for real projects</h3>
+          <p>
+            This frontend is your final project marketing site and control panel entry point – not just a demo
+            form.
+          </p>
+        </div>
+        <div class="register-highlight">
+          <h3>Secure by design</h3>
+          <p>
+            Email verification and access control before the assistant is allowed to change anything in your store.
+          </p>
+        </div>
+        <div class="register-highlight">
+          <h3>WordPress plugin ready</h3>
+          <p>
+            After sign up, users connect their WooCommerce store and install the MCP assistant plugin.
+          </p>
+        </div>
+      </div>
+
+      <div class="register-footnote">
+        Already have an account?
+        <a routerLink="/login">Log in</a>
+      </div>
+    </div>
+
+    <div class="register-right">
+      <div class="register-card">
+        <div class="register-steps">
+          <div class="step-item step-item-active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Account</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item">
+            <div class="step-circle">2</div>
+            <div class="step-label">Billing & plugin</div>
+          </div>
+        </div>
+
+        <div class="register-card-header">
+          <h2>Create your account</h2>
+          <p>Step 1 of 2 – account details and plan</p>
+        </div>
+
+        <div class="register-microcopy-top">
+          No credit card for the Starter plan. You can upgrade to Pro later from your dashboard.
+        </div>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate class="register-form">
+          <div class="register-row">
+            <div class="register-field">
+              <label for="fullName">Full name</label>
+              <input
+                id="fullName"
+                type="text"
+                formControlName="fullName"
+                [ngClass]="{ 'field-error': submitted && f['fullName'].invalid }"
+                placeholder="Lior Kalandarov"
+              />
+              <div class="error-text" *ngIf="submitted && f['fullName'].invalid">
+                Please enter your full name.
+              </div>
+            </div>
+
+            <div class="register-field">
+              <label for="email">Work email</label>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                [ngClass]="{ 'field-error': submitted && f['email'].invalid }"
+                placeholder="you@agency.com"
+              />
+              <div class="error-text" *ngIf="submitted && f['email'].invalid">
+                Please enter a valid email address.
+              </div>
+            </div>
+          </div>
+
+          <div class="register-row">
+            <div class="register-field">
+              <label for="companyName">Company / team name</label>
+              <input
+                id="companyName"
+                type="text"
+                formControlName="companyName"
+                [ngClass]="{ 'field-error': submitted && f['companyName'].invalid }"
+                placeholder="My WooCommerce Agency"
+              />
+              <div class="error-text" *ngIf="submitted && f['companyName'].invalid">
+                Please enter your company or team name.
+              </div>
+            </div>
+
+            <div class="register-field">
+              <label for="phone">Phone (optional)</label>
+              <input
+                id="phone"
+                type="tel"
+                formControlName="phone"
+                placeholder="+972-54-0000000"
+              />
+            </div>
+          </div>
+
+          <div class="register-row">
+            <div class="register-field">
+              <label for="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                [ngClass]="{ 'field-error': submitted && f['password'].invalid }"
+                placeholder="At least 8 characters"
+              />
+              <div class="error-text" *ngIf="submitted && f['password'].invalid">
+                Password must be at least 8 characters long.
+              </div>
+            </div>
+
+            <div class="register-field">
+              <label for="confirmPassword">Confirm password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                formControlName="confirmPassword"
+                [ngClass]="{
+                  'field-error':
+                    submitted &&
+                    (f['confirmPassword'].invalid || f['confirmPassword'].value !== f['password'].value)
+                }"
+                placeholder="Repeat your password"
+              />
+              <div
+                class="error-text"
+                *ngIf="
+                  submitted &&
+                  (f['confirmPassword'].invalid || f['confirmPassword'].value !== f['password'].value)
+                "
+              >
+                Passwords do not match.
+              </div>
+            </div>
+          </div>
+
+          <div class="register-row register-row-role">
+            <div class="register-field">
+              <label>How will you use the assistant?</label>
+              <div class="role-chips">
+                <button
+                  type="button"
+                  class="role-chip"
+                  [ngClass]="{ 'role-chip-active': f['role'].value === 'owner' }"
+                  (click)="f['role'].setValue('owner')"
+                >
+                  Store owner
+                </button>
+                <button
+                  type="button"
+                  class="role-chip"
+                  [ngClass]="{ 'role-chip-active': f['role'].value === 'agency' }"
+                  (click)="f['role'].setValue('agency')"
+                >
+                  Agency / freelancer
+                </button>
+                <button
+                  type="button"
+                  class="role-chip"
+                  [ngClass]="{ 'role-chip-active': f['role'].value === 'developer' }"
+                  (click)="f['role'].setValue('developer')"
+                >
+                  Developer / technical
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="register-row">
+            <div class="register-field">
+              <label for="storeUrl">Primary WooCommerce store URL</label>
+              <input
+                id="storeUrl"
+                type="url"
+                formControlName="storeUrl"
+                [ngClass]="{ 'field-error': submitted && f['storeUrl'].invalid }"
+                placeholder="https://my-store.com"
+              />
+              <div class="error-text" *ngIf="submitted && f['storeUrl'].invalid">
+                Please enter your main store URL.
+              </div>
+              <div class="helper-text">
+                You can add more stores later from your dashboard.
+              </div>
+            </div>
+          </div>
+
+          <div class="register-row register-row-plan">
+            <div class="register-field">
+              <label>Choose your starting plan</label>
+              <div class="plan-grid">
+                <button
+                  type="button"
+                  class="plan-card"
+                  [ngClass]="{ 'plan-card-active': f['plan'].value === 'starter' }"
+                  (click)="f['plan'].setValue('starter')"
+                >
+                  <div class="plan-name">Starter</div>
+                  <div class="plan-price">Free demo</div>
+                  <div class="plan-note">1 store · limited actions · good for testing</div>
+                </button>
+
+                <button
+                  type="button"
+                  class="plan-card"
+                  [ngClass]="{ 'plan-card-active': f['plan'].value === 'pro' }"
+                  (click)="f['plan'].setValue('pro')"
+                >
+                  <div class="plan-name">Pro</div>
+                  <div class="plan-price">$</div>
+                  <div class="plan-note">Full automation, multiple stores, priority limits</div>
+                </button>
+              </div>
+              <div class="helper-text">
+                You can switch plans or cancel any time before connecting a live store.
+              </div>
+            </div>
+          </div>
+
+          <div class="register-info">
+            <div class="register-info-badge">2FA via email</div>
+            <p>
+              Before the bot can run tools on your store we send a one-time verification code to your email.
+            </p>
+          </div>
+
+          <div class="register-row">
+            <label class="checkbox-line">
+              <input type="checkbox" formControlName="agree" />
+              <span>
+                I agree to the terms of use and confirm that I am allowed to connect this WooCommerce store.
+              </span>
+            </label>
+            <div class="error-text" *ngIf="submitted && f['agree'].invalid">
+              You must accept the terms to continue.
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="register-submit"
+            [disabled]="loading || registerForm.invalid"
+          >
+            <span *ngIf="!loading">Create account</span>
+            <span *ngIf="loading">Creating account…</span>
+          </button>
+
+          <div class="register-microcopy-bottom">
+            After this step you will choose billing and connect the WordPress plugin – all guided from the
+            dashboard.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

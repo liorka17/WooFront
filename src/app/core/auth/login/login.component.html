@@ -1,1 +1,100 @@
-<p>login works!</p>
+<div class="min-h-[calc(100vh-120px)] flex items-center justify-center px-4">
+  <div
+    class="max-w-4xl w-full grid md:grid-cols-2 gap-8 bg-slate-900/70 border border-slate-800 rounded-3xl p-8 shadow-xl"
+  >
+    <!-- צד שמאל – טקסט שיווקי -->
+    <div class="hidden md:flex flex-col justify-center gap-4 pr-4 border-r border-slate-800">
+      <p class="text-sm uppercase tracking-[0.25em] text-sky-400">
+        WooCommerce MCP AI Assistant
+      </p>
+      <h1 class="text-2xl font-bold">
+        Login to your control panel
+      </h1>
+      <p class="text-slate-300 text-sm">
+        After registration and payment you will be able to install the WordPress plugin,
+        connect your WooCommerce store and chat with the AI assistant in real time.
+      </p>
+      <ul class="mt-2 text-sm text-slate-300 space-y-1">
+        <li>• One SaaS dashboard for all your connected stores</li>
+        <li>• Secure access with email based verification (2FA demo)</li>
+        <li>• Full chat history and usage overview</li>
+      </ul>
+    </div>
+
+    <!-- צד ימין – טופס התחברות -->
+    <div class="flex flex-col gap-4">
+      <h2 class="text-xl font-semibold mb-1">Welcome back</h2>
+      <p class="text-sm text-slate-300 mb-2">
+        Sign in to continue to your dashboard.
+      </p>
+
+      <!-- הודעת שגיאה מהשרת -->
+      <div
+        *ngIf="errorMessage"
+        class="text-sm text-red-400 bg-red-950/40 border border-red-700/60 rounded-lg px-3 py-2"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <form
+        class="flex flex-col gap-4"
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        novalidate
+      >
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-slate-200">Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm text-slate-200">Password</label>
+          <input
+            type="password"
+            formControlName="password"
+            class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-300">
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              formControlName="remember"
+              class="rounded border-slate-600 bg-slate-950"
+            />
+            Remember me on this device
+          </label>
+          <button type="button" class="text-sky-400 hover:text-sky-300">
+            Forgot password?
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          class="mt-2 w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-lg text-sm transition"
+        >
+          Continue to dashboard (demo)
+        </button>
+      </form>
+
+      <p class="text-xs text-slate-400 mt-2">
+        No account yet?
+        <a routerLink="/register" class="text-sky-400 hover:text-sky-300">
+          Create your account
+        </a>
+      </p>
+
+      <p class="text-[11px] text-slate-500 mt-2">
+        For the project stage, login and 2FA are simulated on the frontend only.
+        Later this screen will be connected to the real Node.js backend and email verification.
+      </p>
+    </div>
+  </div>
+</div>

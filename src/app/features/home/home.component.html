@@ -1,1 +1,252 @@
-<p>home works!</p>
+<section class="home-hero">
+  <div class="home-hero-bg-orbit"></div>
+  <div class="home-hero-bg-glow"></div>
+
+  <div class="home-hero-shell">
+    <div class="home-hero-left">
+      <div class="home-pill">
+        <span class="home-pill-dot"></span>
+        WooCommerce MCP AI Assistant · Live demo
+      </div>
+
+      <h1 class="home-title">
+        One
+        <span class="home-title-accent">AI assistant</span>
+        for every WooCommerce
+        <span class="home-title-break">store owner, agency and developer.</span>
+      </h1>
+
+      <p class="home-subtitle">
+        Ask what happened in your store, get instant answers from real data, and let secure MCP tools update
+        products, prices and reports for you. No more digging in dashboards, no more guessing.
+      </p>
+
+      <div class="home-audience-tabs">
+        <button
+          class="home-audience-tab"
+          [ngClass]="{ 'home-audience-tab-active': activeAudience === 'owners' }"
+          (click)="setAudience('owners')"
+        >
+          Store owners
+        </button>
+        <button
+          class="home-audience-tab"
+          [ngClass]="{ 'home-audience-tab-active': activeAudience === 'agencies' }"
+          (click)="setAudience('agencies')"
+        >
+          Agencies
+        </button>
+        <button
+          class="home-audience-tab"
+          [ngClass]="{ 'home-audience-tab-active': activeAudience === 'developers' }"
+          (click)="setAudience('developers')"
+        >
+          Developers
+        </button>
+      </div>
+
+      <div class="home-audience-panel">
+        <ng-container *ngIf="activeAudience === 'owners'">
+          <h3>For busy store owners</h3>
+          <p>
+            See what you sold today, which products need a price change and where you are losing money –
+            all by asking simple questions in your own language.
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="activeAudience === 'agencies'">
+          <h3>For WooCommerce agencies</h3>
+          <p>
+            Manage multiple client stores from one AI assistant. Give them a branded chatbot that answers
+            questions, creates reports and suggests actions – while you stay in control.
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="activeAudience === 'developers'">
+          <h3>For developers</h3>
+          <p>
+            Work with clear MCP tool contracts, logs and secure API keys. No “black box” magic – every action
+            the assistant runs is traceable and auditable.
+          </p>
+        </ng-container>
+      </div>
+
+      <div class="home-actions">
+        <a routerLink="/register" class="home-cta-primary">
+          Start free demo
+        </a>
+        <a routerLink="/pricing" class="home-cta-ghost">
+          Explore pricing
+        </a>
+      </div>
+
+      <div class="home-metrics">
+        <div class="home-metric">
+          <div class="home-metric-value">3× faster</div>
+          <div class="home-metric-label">daily decisions</div>
+        </div>
+        <div class="home-metric">
+          <div class="home-metric-value">MCP tools</div>
+          <div class="home-metric-label">safe automation</div>
+        </div>
+        <div class="home-metric">
+          <div class="home-metric-value">Plugin ready</div>
+          <div class="home-metric-label">for WordPress</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-hero-right">
+      <div class="home-orbit-card">
+        <div class="home-orbit-header">
+          <div class="home-orbit-title">
+            Live store assistant
+            <span>Connected to WooCommerce via MCP</span>
+          </div>
+          <div class="home-orbit-status">Online</div>
+        </div>
+
+        <div class="home-orbit-dashboard">
+          <div class="home-orbit-topbar">
+            <div class="home-orbit-logo">MCP</div>
+            <div class="home-orbit-top-links">
+              <span>Overview</span>
+              <span>Stores</span>
+              <span>Reports</span>
+            </div>
+            <div class="home-orbit-user-pill">You</div>
+          </div>
+
+          <div class="home-orbit-main">
+            <aside class="home-orbit-sidebar">
+              <div class="home-orbit-sidebar-item active">Today</div>
+              <div class="home-orbit-sidebar-item">Sales</div>
+              <div class="home-orbit-sidebar-item">Inventory</div>
+              <div class="home-orbit-sidebar-item">Pricing</div>
+              <div class="home-orbit-sidebar-item">Automation</div>
+            </aside>
+
+            <div class="home-orbit-content">
+              <div class="home-orbit-cards">
+                <div class="home-orbit-mini-card">
+                  <span>Today’s revenue</span>
+                  <strong>$3,420</strong>
+                </div>
+                <div class="home-orbit-mini-card">
+                  <span>Orders</span>
+                  <strong>57</strong>
+                </div>
+                <div class="home-orbit-mini-card">
+                  <span>Low stock alerts</span>
+                  <strong>4</strong>
+                </div>
+              </div>
+
+              <div class="home-orbit-chat">
+                <div class="home-chat-bubble home-chat-bubble-user">
+                  “What did I sell today and which products should increase in price before Black Friday?”
+                </div>
+
+                <div class="home-chat-bubble home-chat-bubble-assistant">
+                  <div class="home-chat-tag">AI assistant</div>
+                  <p>
+                    Today your store generated <strong>$3,420</strong> from <strong>57 orders</strong>. Top performer:
+                    <strong>Gaming Headset Pro</strong> with <strong>29%</strong> margin.
+                  </p>
+                  <p>
+                    I can raise its price by <strong>10%</strong>, pause two low converting products and create a discount
+                    bundle for accessories. All actions will use audited MCP tools.
+                  </p>
+                  <div class="home-chat-actions">
+                    <button type="button" class="home-chat-btn-primary">Approve actions</button>
+                    <button type="button" class="home-chat-btn-ghost">Review details</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="home-orbit-footer">
+          <div class="home-orbit-footnote">
+            WordPress plugin · WooCommerce REST · HashiCorp Vault · JWT auth
+          </div>
+          <div class="home-orbit-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="home-steps">
+    <div class="home-steps-shell">
+      <h2>How the platform works</h2>
+      <div class="home-steps-grid">
+        <div class="home-step-card">
+          <span class="home-step-tag">1 · Marketing site</span>
+          <h3>Tell the story and collect signups</h3>
+          <p>
+            Visitors land here, understand the value in seconds and create an account with verified email
+            and billing details.
+          </p>
+        </div>
+        <div class="home-step-card">
+          <span class="home-step-tag">2 · Dashboard</span>
+          <h3>Connect WooCommerce and plugin</h3>
+          <p>
+            After login they connect their WordPress store, install the plugin and see usage, stores and logs
+            in the dashboard.
+          </p>
+        </div>
+        <div class="home-step-card">
+          <span class="home-step-tag">3 · AI assistant</span>
+          <h3>Chat, analyze and automate</h3>
+          <p>
+            The widget sits on their store, answers questions in real time and triggers MCP tools for secure,
+            controlled automation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <button class="bot-launcher" (click)="toggleBot()">
+    <div class="bot-launcher-glow"></div>
+    <div class="bot-launcher-inner">
+      <span class="bot-launcher-icon">🤖</span>
+      <span class="bot-launcher-text">Ask the assistant</span>
+    </div>
+  </button>
+
+  <div class="bot-panel" [ngClass]="{ 'bot-panel-open': botOpen }">
+    <div class="bot-panel-header">
+      <div>
+        <div class="bot-panel-title">WooCommerce MCP assistant</div>
+        <div class="bot-panel-subtitle">This is how your customers will see it on their store</div>
+      </div>
+      <button class="bot-panel-close" (click)="toggleBot()">✕</button>
+    </div>
+
+    <div class="bot-panel-body">
+      <div class="bot-panel-message bot-panel-message-user">
+        “What can you help me with?”
+      </div>
+      <div class="bot-panel-message bot-panel-message-assistant">
+        I can:
+        <ul>
+          <li>Summarize today’s sales and key products</li>
+          <li>Find low stock items before you run out</li>
+          <li>Suggest and apply safe price changes</li>
+          <li>Create simple reports your team can act on</li>
+        </ul>
+      </div>
+
+      <div class="bot-panel-suggestions">
+        <span class="bot-suggestion-chip">“Show me today’s revenue”</span>
+        <span class="bot-suggestion-chip">“Which products are underperforming?”</span>
+        <span class="bot-suggestion-chip">“Create a Black Friday report”</span>
+      </div>
+    </div>
+  </div>
+</section>
