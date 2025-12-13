@@ -46,7 +46,42 @@
 
     <div class="register-right">
       <div class="register-card">
-        <div class="register-steps">
+        <!-- מודאל הצלחה במרכז המסך, חוסם את הכל -->
+        <div class="success-overlay" *ngIf="successToast">
+          <div class="success-card">
+            <div class="success-icon">✓</div>
+            <h3 class="success-title">Account created</h3>
+            <p class="success-text">
+              {{ successMessage }}
+            </p>
+            <button
+              type="button"
+              class="success-button"
+              (click)="onContinueToDashboard()"
+            >
+              Continue to my dashboard
+            </button>
+
+            <p class="success-inline-link">
+              <a class="success-link" (click)="onContinueToDashboard()">Open dashboard</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- סיכום שגיאות בראש הכרטיס -->
+        <div class="error-summary" *ngIf="errorSummary.length > 0 && !successToast">
+          <h4>We found {{ errorSummary.length }} issue(s):</h4>
+          <ul>
+            <li *ngFor="let item of errorSummary">{{ item }}</li>
+          </ul>
+        </div>
+
+        <!-- שגיאה כללית מהשרת -->
+        <div class="error-banner" *ngIf="serverError && !successToast">
+          {{ serverError }}
+        </div>
+
+        <div class="register-steps" [class.dimmed]="successToast">
           <div class="step-item step-item-active">
             <div class="step-circle">1</div>
             <div class="step-label">Account</div>
@@ -58,16 +93,22 @@
           </div>
         </div>
 
-        <div class="register-card-header">
+        <div class="register-card-header" [class.dimmed]="successToast">
           <h2>Create your account</h2>
           <p>Step 1 of 2 – account details and plan</p>
         </div>
 
-        <div class="register-microcopy-top">
+        <div class="register-microcopy-top" [class.dimmed]="successToast">
           No credit card for the Starter plan. You can upgrade to Pro later from your dashboard.
         </div>
 
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate class="register-form">
+        <form
+          [formGroup]="registerForm"
+          (ngSubmit)="onSubmit()"
+          novalidate
+          class="register-form"
+          [class.dimmed]="successToast"
+        >
           <div class="register-row">
             <div class="register-field">
               <label for="fullName">Full name</label>
@@ -76,7 +117,8 @@
                 type="text"
                 formControlName="fullName"
                 [ngClass]="{ 'field-error': submitted && f['fullName'].invalid }"
-                placeholder="Lior Kalandarov"
+                placeholder="your name"
+                autocomplete="name"
               />
               <div class="error-text" *ngIf="submitted && f['fullName'].invalid">
                 Please enter your full name.
@@ -91,6 +133,7 @@
                 formControlName="email"
                 [ngClass]="{ 'field-error': submitted && f['email'].invalid }"
                 placeholder="you@agency.com"
+                autocomplete="email"
               />
               <div class="error-text" *ngIf="submitted && f['email'].invalid">
                 Please enter a valid email address.
@@ -107,6 +150,7 @@
                 formControlName="companyName"
                 [ngClass]="{ 'field-error': submitted && f['companyName'].invalid }"
                 placeholder="My WooCommerce Agency"
+                autocomplete="organization"
               />
               <div class="error-text" *ngIf="submitted && f['companyName'].invalid">
                 Please enter your company or team name.
@@ -120,6 +164,7 @@
                 type="tel"
                 formControlName="phone"
                 placeholder="+972-54-0000000"
+                autocomplete="tel"
               />
             </div>
           </div>
@@ -127,13 +172,23 @@
           <div class="register-row">
             <div class="register-field">
               <label for="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                [ngClass]="{ 'field-error': submitted && f['password'].invalid }"
-                placeholder="At least 8 characters"
-              />
+              <div class="password-wrapper">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  [ngClass]="{ 'field-error': submitted && f['password'].invalid }"
+                  placeholder="At least 8 characters"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="showPassword = !showPassword"
+                >
+                  {{ showPassword ? "Hide" : "Show" }}
+                </button>
+              </div>
               <div class="error-text" *ngIf="submitted && f['password'].invalid">
                 Password must be at least 8 characters long.
               </div>
@@ -141,17 +196,27 @@
 
             <div class="register-field">
               <label for="confirmPassword">Confirm password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                formControlName="confirmPassword"
-                [ngClass]="{
-                  'field-error':
-                    submitted &&
-                    (f['confirmPassword'].invalid || f['confirmPassword'].value !== f['password'].value)
-                }"
-                placeholder="Repeat your password"
-              />
+              <div class="password-wrapper">
+                <input
+                  id="confirmPassword"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  [ngClass]="{
+                    'field-error':
+                      submitted &&
+                      (f['confirmPassword'].invalid || f['confirmPassword'].value !== f['password'].value)
+                  }"
+                  placeholder="Repeat your password"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="showConfirmPassword = !showConfirmPassword"
+                >
+                  {{ showConfirmPassword ? "Hide" : "Show" }}
+                </button>
+              </div>
               <div
                 class="error-text"
                 *ngIf="
@@ -205,6 +270,7 @@
                 formControlName="storeUrl"
                 [ngClass]="{ 'field-error': submitted && f['storeUrl'].invalid }"
                 placeholder="https://my-store.com"
+                autocomplete="off"
               />
               <div class="error-text" *ngIf="submitted && f['storeUrl'].invalid">
                 Please enter your main store URL.
@@ -258,23 +324,20 @@
             <label class="checkbox-line">
               <input type="checkbox" formControlName="agree" />
               <span>
-                I agree to the terms of use and confirm that I am allowed to connect this WooCommerce store.
+                I agree to the
+                <a routerLink="/legal/terms">Terms of Service</a>
+                and confirm that I am allowed to connect this WooCommerce store.
               </span>
             </label>
             <div class="error-text" *ngIf="submitted && f['agree'].invalid">
-              You must accept the terms to continue.
+              You must accept the Terms of Service to continue.
             </div>
-          </div>
-
-          <!-- בלוק שגיאה כללי מהשרת -->
-          <div class="error-text global-error" *ngIf="apiError">
-            {{ apiError }}
           </div>
 
           <button
             type="submit"
             class="register-submit"
-            [disabled]="loading || registerForm.invalid"
+            [disabled]="loading || successToast"
           >
             <span *ngIf="!loading">Create account</span>
             <span *ngIf="loading">Creating account…</span>

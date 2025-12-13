@@ -1,89 +1,207 @@
-import { Component } from '@angular/core';                                       // ייבוא דקורטור Component להגדרת קומפוננטה
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // ייבוא מודול טפסים ריאקטיביים וכלי ולידציה
-import { NgIf, NgClass } from '@angular/common';                                 // ייבוא דיירקטיבים לתצוגה תנאית וקלאסים דינמיים
-import { RouterModule, Router } from '@angular/router';                          // ייבוא RouterModule לתבנית ו Router לניווט בקוד
-import { AuthService, RegisterRequest, RegisterResponse } from '../auth.service';// ייבוא AuthService וטיפוסים של רישום מהשירות
+import { Component } from "@angular/core";                                              // מייבא את דקורטור הקומפוננטה מאנגולר
+import {                                                                              // מייבא מחלקות עבור טופס ריאקטיבי
+  ReactiveFormsModule,                                                                // מודול לטפסים ריאקטיביים
+  FormBuilder,                                                                        // יוצר אובייקטי FormGroup בצורה נוחה
+  FormGroup,                                                                          // מייצג טופס ריאקטיבי
+  Validators,                                                                         // אוסף ולידטורים מוכנים
+} from "@angular/forms";
+import { NgIf, NgClass, NgFor } from "@angular/common";                               // דיירקטיבים מובנים לתבנית *ngIf, *ngClass, *ngFor
+import { RouterModule, Router } from "@angular/router";                               // ראוטר של אנגולר לניווט ושימוש ב routerLink
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";                 // לקוח HTTP ושגיאת HTTP לטיפול בתשובה מהשרת
 
-@Component({                                                                      // דקורטור שמגדיר את מאפייני הקומפוננטה
-  selector: 'app-register',                                                      // שם הסלקטור של הקומפוננטה ב HTML
-  standalone: true,                                                              // מציין שזו קומפוננטה עצמאית ללא מודול נפרד
-  imports: [ReactiveFormsModule, NgIf, NgClass, RouterModule],                  // רשימת מודולים שזמינים בתוך התבנית של הקומפוננטה
-  templateUrl: './register.component.html',                                      // נתיב לקובץ תבנית ה HTML של הקומפוננטה
-  styleUrl: './register.component.scss',                                         // נתיב לקובץ סגנונות ה SCSS של הקומפוננטה
+interface RegisterResponse {                                                          // ממשק לתשובת הרשמה מהשרת
+  ok: boolean;                                                                        // האם הבקשה הצליחה בצד השרת
+  user?: any;                                                                         // אובייקט משתמש שהשרת מחזיר במקרה הצורך
+  error?: string;                                                                     // הודעת שגיאה מהשרת אם יש
+}
+
+@Component({
+  selector: "app-register",                                                           // שם תגית הקומפוננטה ב HTML
+  standalone: true,                                                                   // קומפוננטה עצמאית ללא מודול
+  imports: [ReactiveFormsModule, NgIf, NgClass, NgFor, RouterModule],                 // מודולים ודיירקטיבים שהקומפוננטה משתמשת בהם
+  templateUrl: "./register.component.html",                                           // קובץ תבנית HTML של הקומפוננטה
+  styleUrl: "./register.component.scss",                                              // קובץ עיצוב SCSS של הקומפוננטה
 })
-export class RegisterComponent {                                                 // מחלקה שמייצגת את קומפוננטת הרישום
-  registerForm: FormGroup;                                                       // שדה שמחזיק את אובייקט הטופס הריאקטיבי
-  submitted = false;                                                             // דגל שמייצג אם המשתמש כבר ניסה לשלוח את הטופס
-  loading = false;                                                               // דגל שמייצג מצב טעינה בזמן שליחת בקשה לשרת
-  apiError: string | null = null;                                                // מחרוזת לשמירת הודעת שגיאה כללית מהשרת במקרה של כישלון
+export class RegisterComponent {                                                      // מחלקת הקומפוננטה של דף ההרשמה
+  registerForm: FormGroup;                                                            // אובייקט הטופס הריאקטיבי
+  submitted = false;                                                                  // דגל האם המשתמש ניסה להגיש את הטופס
+  loading = false;                                                                    // דגל האם יש כרגע בקשת הרשמה פעילה לשרת
 
-  constructor(                                                                   // בנאי הקומפוננטה
-    private fb: FormBuilder,                                                     // הזרקה של FormBuilder ליצירת טופס ריאקטיבי
-    private authService: AuthService,                                            // הזרקה של AuthService לצורך רישום משתמשים
-    private router: Router                                                       // הזרקה של Router לצורך ניווט אחרי רישום
+  // overlay / card של הצלחה אחרי הרשמה
+  successToast = false;                                                               // דגל האם להציג שכבת הצלחה מעל הטופס
+  successMessage =                                                                    // טקסט ההודעה שמופיעה למעלה אחרי הרשמה מוצלחת
+    "Account created successfully. Continue to your dashboard to finish setup.";
+
+  // שגיאה כללית מהשרת
+  serverError: string | null = null;                                                  // מחרוזת שגיאה כללית מהשרת במקרה של כישלון
+
+  // סיכום שגיאות למעלה
+  errorSummary: string[] = [];                                                        // מערך של שורות שגיאה להצגה בראש הכרטיס
+
+  // הצגת או הסתרת סיסמאות
+  showPassword = false;                                                               // האם להראות את שדה הסיסמא כטקסט גלוי
+  showConfirmPassword = false;                                                        // האם להראות את שדה אישור הסיסמא כטקסט גלוי
+
+  private baseUrl = "http://localhost:3000";                                          // בסיס כתובת הבקאנד של Fastify
+
+  // כאן אפשר לשנות בקלות את הנתיב של הדשבורד
+  private dashboardRoute: string[] = ["/admin"];                                      // נתיב הניווט אחרי לחיצה על Continue
+
+  constructor(                                                                        // בנאי הקומפוננטה
+    private fb: FormBuilder,                                                          // הזרקת FormBuilder ליצירת הטופס
+    private http: HttpClient,                                                         // הזרקת HttpClient לשליחת בקשת הרשמה
+    private router: Router                                                            // הזרקת Router לניווט אחרי הצלחה
   ) {
-    this.registerForm = this.fb.group({                                          // יצירת אובייקט הטופס והגדרת השדות שלו
-      fullName: ['', [Validators.required, Validators.minLength(2)]],            // שדה שם מלא עם ולידציה של חובה ומינימום 2 תווים
-      email: ['', [Validators.required, Validators.email]],                      // שדה אימייל עם ולידציה של חובה ומבנה אימייל תקין
-      password: ['', [Validators.required, Validators.minLength(8)]],            // שדה סיסמה עם ולידציה של חובה ומינימום 8 תווים
-      confirmPassword: ['', [Validators.required]],                              // שדה אישור סיסמה שמסומן כחובה
-      companyName: ['', [Validators.required]],                                  // שדה שם חברה חובה בצד לקוח בלבד כרגע
-      phone: [''],                                                               // שדה טלפון שאינו חובה כרגע
-      role: ['owner', [Validators.required]],                                    // שדה תפקיד עם ערך ברירת מחדל owner ולידציה של חובה
-      storeUrl: ['', [Validators.required]],                                     // שדה כתובת חנות עם ולידציה של חובה
-      plan: ['starter', [Validators.required]],                                  // שדה תכנית עם ערך ברירת מחדל starter ולידציה של חובה
-      agree: [false, [Validators.requiredTrue]],                                 // סימון הסכמה לתנאים שמסומן כחובה להיות true
-    });                                                                          // סיום הגדרת הטופס
+    this.registerForm = this.fb.group({                                               // יצירת מבנה הטופס ושיוך ולידטורים
+      fullName: ["", [Validators.required, Validators.minLength(2)]],                 // שם מלא חובה באורך מינימלי 2
+      email: ["", [Validators.required, Validators.email]],                           // אימייל חובה בפורמט תקין
+      password: ["", [Validators.required, Validators.minLength(8)]],                 // סיסמא חובה באורך מינימלי 8 תווים
+      confirmPassword: ["", [Validators.required]],                                   // אישור סיסמא חובה
+      companyName: ["", [Validators.required]],                                       // שם חברה או צוות חובה
+      phone: [""],                                                                    // טלפון רשות בלבד ללא ולידציה
+      role: ["owner", [Validators.required]],                                         // תפקיד המשתמש ברירת מחדל owner חובה
+      storeUrl: ["", [Validators.required]],                                          // כתובת החנות חובה
+      plan: ["starter", [Validators.required]],                                       // תוכנית ברירת מחדל starter חובה
+      agree: [false, [Validators.requiredTrue]],                                      // חובה לסמן הסכמה לתנאים
+    });
   }
 
-  get f(): any {                                                                 // גטר נוח לגישה לבקרי הטופס מהתבנית ומהקוד
-    return this.registerForm.controls;                                           // מחזיר את אוסף הבקרים של הטופס
+  get f(): any {                                                                      // גטר נוח לקיצור גישה לפקדים של הטופס
+    return this.registerForm.controls;                                                // מחזיר את האוסף של הפקדים
   }
 
-  onSubmit(): void {                                                             // פונקציה שמופעלת בעת שליחת הטופס
-    this.submitted = true;                                                       // מסמן שהמשתמש ניסה לשלוח את הטופס לפחות פעם אחת
-    this.apiError = null;                                                        // מאפס הודעת שגיאה כללית קודמת אם הייתה
+  // איסוף שגיאות ולידציה למסך העליון
+  private collectClientErrors(): string[] {                                           // פונקציה אוספת טקסטים של שגיאות ולידציה
+    const errors: string[] = [];                                                      // יוצר מערך ריק לשגיאות
 
-    if (this.registerForm.invalid) {                                             // אם הטופס לא עבר את כלול ולידציות הצד לקוח
-      return;                                                                    // לא מבצעים רישום ולא שולחים בקשה לשרת
+    if (this.f["fullName"].invalid) {                                                 // אם שם מלא לא תקין
+      errors.push("Full name is required (at least 2 characters).");                 // מוסיף שורה מתאימה לרשימת השגיאות
+    }
+    if (this.f["email"].invalid) {                                                    // אם אימייל לא תקין
+      errors.push("A valid work email is required.");                                // מוסיף שורה מתאימה
+    }
+    if (this.f["companyName"].invalid) {                                              // אם שם חברה לא תקין
+      errors.push("Company / team name is required.");                               // מוסיף שורה מתאימה
+    }
+    if (this.f["password"].invalid) {                                                 // אם הסיסמא לא עומדת בדרישות
+      errors.push("Password must be at least 8 characters long.");                   // מוסיף שורה מתאימה
+    }
+    if (                                                                               // בדיקה לאישור סיסמא
+      this.f["confirmPassword"].invalid ||                                            // אם שדה אישור סיסמא עצמו לא תקין
+      this.f["confirmPassword"].value !== this.f["password"].value                   // או אם הערך לא שווה לערך הסיסמא
+    ) {
+      errors.push("Passwords must match.");                                          // מוסיף שורה שהסיסמאות חייבות להיות זהות
+    }
+    if (this.f["storeUrl"].invalid) {                                                 // אם כתובת החנות לא תקינה
+      errors.push("Primary WooCommerce store URL is required.");                     // מוסיף שורה מתאימה
+    }
+    if (this.f["agree"].invalid) {                                                    // אם לא סומנו תנאי השירות
+      errors.push("You must accept the Terms of Service to continue.");              // מוסיף שורה מתאימה
     }
 
-    const password = this.f['password'].value;                                   // קריאת ערך שדה הסיסמה מהטופס
-    const confirmPassword = this.f['confirmPassword'].value;                     // קריאת ערך שדה אישור הסיסמה מהטופס
+    return errors;                                                                    // מחזיר את רשימת השגיאות
+  }
 
-    if (password !== confirmPassword) {                                          // בדיקה שהסיסמה ואישור הסיסמה זהים
-      this.apiError = 'Passwords do not match.';                                 // הצגת הודעת שגיאה כללית אם יש אי התאמה
-      return;                                                                    // יציאה מהפונקציה בלי לשלוח בקשה לשרת
+  private clearPasswords() {                                                          // פונקציה לניקוי שדות הסיסמא
+    this.registerForm.patchValue({                                                    // מעדכנת חלקית את הטופס
+      password: "",                                                                   // מרוקן את שדה הסיסמא
+      confirmPassword: "",                                                            // מרוקן את שדה אישור הסיסמא
+    });
+  }
+
+  onSubmit() {                                                                        // פונקציה שרצה בעת שליחת הטופס
+    this.submitted = true;                                                            // מסמן שנוצר ניסיון שליחה
+    this.serverError = null;                                                          // מנקה שגיאת שרת קודמת אם הייתה
+    this.errorSummary = [];                                                           // מנקה סיכום שגיאות קיים
+    this.successToast = false;                                                        // מסתיר הודעת הצלחה קודמת אם הייתה
+
+    this.registerForm.markAllAsTouched();                                             // מסמן את כל הפקדים כ touched כדי שיראו שגיאות
+
+    const clientErrors = this.collectClientErrors();                                  // אוסף שגיאות ולידציה מצד הלקוח
+    if (clientErrors.length > 0) {                                                    // אם יש שגיאות
+      this.errorSummary = clientErrors;                                               // מציג אותן בראש הטופס
+      this.clearPasswords();                                                          // מנקה את שדות הסיסמא כדי שלא יישמרו
+      return;                                                                         // מפסיק את תהליך ההרשמה
     }
 
-    const payload: RegisterRequest = {                                           // בניית גוף הבקשה לרישום לפי הממשק RegisterRequest
-      fullName: this.f['fullName'].value,                                        // העתקת שם מלא מהטופס לגוף הבקשה
-      email: this.f['email'].value,                                              // העתקת אימייל מהטופס לגוף הבקשה
-      password: this.f['password'].value,                                        // העתקת סיסמה מהטופס לגוף הבקשה
-      role: this.f['role'].value,                                                // העתקת תפקיד שנבחר לגוף הבקשה
-      storeUrl: this.f['storeUrl'].value,                                        // העתקת כתובת החנות מהטופס לגוף הבקשה
-      plan: this.f['plan'].value,                                                // העתקת התכנית שנבחרה לגוף הבקשה
-    };                                                                           // סיום בניית האובייקט payload
+    if (this.registerForm.invalid) {                                                  // בדיקת גיבוי שאכן הטופס תקין
+      this.clearPasswords();                                                          // מנקה סיסמאות ליתר ביטחון
+      return;                                                                         // מפסיק אם עדיין לא תקין
+    }
 
-    this.loading = true;                                                         // הפעלת דגל טעינה בזמן שהבקשה נשלחת לשרת
+    const payload = {                                                                 // יוצר אובייקט נתונים לבקשת ההרשמה
+      fullName: this.f["fullName"].value.trim(),                                      // שם מלא אחרי טרים
+      email: this.f["email"].value.trim().toLowerCase(),                              // אימייל אחרי טרים ואותיות קטנות
+      password: this.f["password"].value,                                             // סיסמא כמו שהוזנה
+      role: this.f["role"].value,                                                     // תפקיד שנבחר
+      storeUrl: this.f["storeUrl"].value.trim(),                                      // כתובת חנות אחרי טרים
+      plan: this.f["plan"].value,                                                     // תוכנית שנבחרה
+      // companyName + phone אפשר להוסיף לסכמה בבקאנד בהמשך לפי הצורך           // הערה מה לנהל בעתיד
+    };
 
-    this.authService.register(payload).subscribe({                               // קריאה לשירות ההזדהות לביצוע רישום בפועל
-      next: (res: RegisterResponse) => {                                         // פונקציה שמטפלת בתגובה תקינה מהשרת
-        this.loading = false;                                                    // כיבוי דגל הטעינה לאחר קבלת תגובה
+    this.loading = true;                                                              // מדליק מצב טעינה כדי לנעול כפתור
 
-        if (res.ok && res.user) {                                                // אם השרת החזיר שהרישום הצליח ויש אובייקט user
-          alert('Account created successfully. Please log in to continue.');     // הצגת הודעת הצלחה למשתמש בצד לקוח
-          this.router.navigate(['/login']);                                      // ניווט למסך התחברות אחרי רישום מוצלח
-        } else {                                                                 // במקרה ש ok שווה false או שאין user בתגובה
-          this.apiError =                                                       // שמירת הודעת השגיאה שתוצג למשתמש
-            res.error || 'Registration failed. Please try again.';              // שימוש בהודעת השרת או הודעה כללית במקרה שאין
-        }                                                                        // סיום התנאי
-      },                                                                         // סיום פונקציית next
-      error: (err) => {                                                          // פונקציה שמטפלת במקרה של שגיאת HTTP או תקשורת
-        this.loading = false;                                                    // כיבוי דגל הטעינה גם במקרה של שגיאה
-        this.apiError =                                                          // שמירת הודעת השגיאה שתוצג למשתמש
-          err?.error?.error || 'Server error during registration. Please try again.'; // שימוש בהודעת השרת אם קיימת או הודעה כללית
-      },                                                                         // סיום פונקציית error
-    });                                                                          // סיום קריאת subscribe ל Observable
+    this.http                                                                       // שימוש ב HttpClient
+      .post<RegisterResponse>(`${this.baseUrl}/api/auth/register`, payload)          // שליחת בקשת POST לנתיב ההרשמה
+      .subscribe({                                                                   // רישום למנוי על התשובה
+        next: (res) => {                                                             // מטפל בתשובה מוצלחת מהשרת
+          console.log("Register response:", res);                                    // לוג לקונסול לצורך דיבוג
+
+          if (res.ok) {                                                              // אם השרת החזיר ok true
+            this.errorSummary = [];                                                  // מנקה רשימת שגיאות
+            this.serverError = null;                                                 // מנקה שגיאת שרת
+
+            this.submitted = false;                                                  // מאפס מצב submitted כי כבר הצליח
+            this.registerForm.reset({                                                // מאפס את ערכי הטופס לברירת מחדל
+              fullName: "",                                                          // מנקה שם מלא
+              email: "",                                                             // מנקה אימייל
+              password: "",                                                          // מנקה סיסמא
+              confirmPassword: "",                                                   // מנקה אישור סיסמא
+              companyName: "",                                                       // מנקה שם חברה
+              phone: "",                                                             // מנקה טלפון
+              role: "owner",                                                         // מחזיר תפקיד לברירת מחדל
+              storeUrl: "",                                                          // מנקה כתובת חנות
+              plan: "starter",                                                       // מחזיר תוכנית לברירת מחדל
+              agree: false,                                                          // מוריד סימון תנאי שימוש
+            });
+            this.registerForm.markAsPristine();                                      // מסמן שהטופס נקי
+            this.registerForm.markAsUntouched();                                     // מסמן שהפקדים לא נגעו בהם
+
+            this.showPassword = false;                                               // מחזיר סיסמא למצב מוסתר
+            this.showConfirmPassword = false;                                        // מחזיר אישור סיסמא למצב מוסתר
+
+            this.successToast = true;                                                // מפעיל את שכבת ההצלחה עם כפתור המשך
+          } else {                                                                   // אם ok הוא false
+            const msg =                                                              // בוחר הודעת שגיאה מתאימה
+              res.error || "Registration failed. Please check your details.";
+            this.serverError = msg;                                                  // שומר הודעת שגיאה להצגה
+            this.errorSummary = [msg];                                               // מציג אותה גם בסיכום השגיאות
+            this.clearPasswords();                                                   // מנקה שדות סיסמא
+          }
+        },
+        error: (err: HttpErrorResponse) => {                                         // טיפול בשגיאת רשת או שגיאת שרת
+          console.error("Register error:", err);                                     // לוג שגיאה בקונסול
+
+          let msg = "Server error. Please try again.";                               // הודעת ברירת מחדל
+          if (err.status === 409) {                                                  // אם יש קוד 409 מהשרת
+            msg = "A user with this email already exists.";                          // משתמש קיים כבר
+          } else if (err.status === 400) {                                           // אם יש קוד 400
+            msg = "Missing or invalid fields. Please check the form.";               // שדות חסרים או לא תקינים
+          }
+
+          this.serverError = msg;                                                    // שמירת הודעת השגיאה
+          this.errorSummary = [msg];                                                 // הצגת השגיאה למעלה
+          this.clearPasswords();                                                     // ניקוי שדות סיסמא להגנה
+        },
+        complete: () => {                                                            // פונקציה שרצה בסיום המנוי
+          this.loading = false;                                                      // מכבה מצב טעינה
+        },
+      });
+  }
+
+  // קריאה מכפתור Continue to my dashboard
+  onContinueToDashboard() {                                                          // פונקציה שמופעלת בלחיצה על כפתור ההמשך
+    this.successToast = false;                                                       // מסתיר את שכבת ההצלחה
+    this.router.navigate(this.dashboardRoute);                                       // מנווט לנתיב הדשבורד שהוגדר
   }
 }
