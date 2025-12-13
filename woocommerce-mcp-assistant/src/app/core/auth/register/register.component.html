@@ -266,6 +266,11 @@
             </div>
           </div>
 
+          <!-- בלוק שגיאה כללי מהשרת -->
+          <div class="error-text global-error" *ngIf="apiError">
+            {{ apiError }}
+          </div>
+
           <button
             type="submit"
             class="register-submit"
