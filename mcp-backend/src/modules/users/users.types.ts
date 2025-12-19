@@ -5,6 +5,7 @@ export interface RegisterBody {
   password: string;
   role: "owner" | "agency" | "developer";
   storeUrl: string;
+  storeName: string; // חדש  שם חנות שהמשתמש מזין ברישום
   plan: "starter" | "pro";
 }
 
@@ -13,6 +14,7 @@ export interface UpdateUserBody {
   fullName: string;
   role: "owner" | "agency" | "developer";
   storeUrl: string;
+  storeName: string; // חדש  אפשרות לעדכן שם חנות מתוך אדמין
   plan: "starter" | "pro";
   isEmailVerified: boolean;
 }
@@ -24,6 +26,7 @@ export interface UserDto {
   email: string;
   role: string;
   storeUrl: string;
+  storeName: string; // חדש  נשלח ל UI כדי להציג בדשבורד
   plan: string;
   isEmailVerified: boolean;
   createdAt: string;

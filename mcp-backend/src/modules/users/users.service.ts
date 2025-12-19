@@ -9,6 +9,7 @@ function mapRowToUserDto(row: any): UserDto {
     email: row.email,
     role: row.role,
     storeUrl: row.store_url,
+    storeName: row.store_name, // חדש  ממפה את שם החנות מהעמודה החדשה
     plan: row.plan,
     isEmailVerified: row.is_email_verified,
     createdAt: row.created_at,
@@ -30,15 +31,23 @@ export async function registerUser(
     throw new Error("USER_EXISTS");
   }
 
-  const saltRounds = 10;
+  const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? 10);
   const passwordHash = await bcrypt.hash(body.password, saltRounds);
 
   const insertResult: QueryResult = await db.query(
     `INSERT INTO users
-       (full_name, email, password_hash, role, store_url, plan)
-     VALUES ($1, $2, $3, $4, $5, $6)
+       (full_name, email, password_hash, role, store_url, store_name, plan)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [body.fullName, email, passwordHash, body.role, body.storeUrl, body.plan]
+    [
+      body.fullName,
+      email,
+      passwordHash,
+      body.role,
+      body.storeUrl,
+      body.storeName, // חדש  נשמר במסד נתונים
+      body.plan,
+    ]
   );
 
   return mapRowToUserDto(insertResult.rows[0]);
@@ -74,14 +83,16 @@ export async function updateUser(
          full_name = $1,
          role = $2,
          store_url = $3,
-         plan = $4,
-         is_email_verified = $5
-     WHERE id = $6
+         store_name = $4,
+         plan = $5,
+         is_email_verified = $6
+     WHERE id = $7
      RETURNING *`,
     [
       body.fullName,
       body.role,
       body.storeUrl,
+      body.storeName, // חדש  עדכון שם חנות
       body.plan,
       body.isEmailVerified,
       id,

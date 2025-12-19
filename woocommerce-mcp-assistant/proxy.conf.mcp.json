@@ -1,8 +1,12 @@
 {
   "/api": {
-    "target": "http://localhost:3000",
+    
+    "target": "http://44.197.203.101:3000",
+
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }
 }
+
+

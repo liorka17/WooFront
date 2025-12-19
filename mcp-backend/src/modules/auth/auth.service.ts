@@ -1,9 +1,13 @@
 import type { Pool } from "pg";
 import bcrypt from "bcryptjs";
-import jwt, { Secret } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import type { Secret, SignOptions } from "jsonwebtoken";
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET ?? "dev-secret";
-const JWT_EXPIRES_IN = "1h";
+const JWT_SECRET: Secret = (process.env.JWT_SECRET ?? "dev-secret").trim();
+
+// חשוב: expiresIn מקבל טיפוס מיוחד, לא string כללי
+const JWT_EXPIRES_IN: SignOptions["expiresIn"] =
+  (process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"]) ?? "1h";
 
 export interface LoginInput {
   email: string;
@@ -16,12 +20,10 @@ export interface JwtUserPayload {
   role: "owner" | "agency" | "developer" | "admin";
 }
 
-// יצירת טוקן על בסיס payload
 export function signToken(payload: JwtUserPayload): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
-// אימות טוקן והחזרת ה payload
 export function verifyToken(token: string): JwtUserPayload {
   return jwt.verify(token, JWT_SECRET) as JwtUserPayload;
 }

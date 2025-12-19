@@ -261,7 +261,23 @@
             </div>
           </div>
 
+          <!-- Store name + Store URL באותה שורה בדסקטופ -->
           <div class="register-row">
+            <div class="register-field">
+              <label for="storeName">Store name</label>
+              <input
+                id="storeName"
+                type="text"
+                formControlName="storeName"
+                [ngClass]="{ 'field-error': submitted && f['storeName'].invalid }"
+                placeholder="My Woo Store"
+                autocomplete="off"
+              />
+              <div class="error-text" *ngIf="submitted && f['storeName'].invalid">
+                Please enter your store name.
+              </div>
+            </div>
+
             <div class="register-field">
               <label for="storeUrl">Primary WooCommerce store URL</label>
               <input

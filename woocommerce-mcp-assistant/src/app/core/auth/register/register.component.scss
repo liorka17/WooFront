@@ -63,7 +63,7 @@
 }
 
 .register-card {
-  @apply w-full rounded-3xl bg-slate-950/90 border border-slate-800/90 px-6 py-6 lg:px-8 lg:py-7 text-slate-50;
+  @apply w-full rounded-3xl bg-slate-950/90 border border-slate-800/90 px-6 py-6 lg:px-8 lg:py-7 text-slate-50 shadow-2xl;
   box-shadow:
     0 18px 45px rgba(15, 23, 42, 0.9),
     0 0 0 1px rgba(15, 23, 42, 0.9);
@@ -212,22 +212,15 @@
 
 .register-submit {
   @apply mt-2 w-full inline-flex items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-semibold text-white;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.55);
-  border: none;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  @apply bg-gradient-to-r from-sky-500 to-indigo-500 shadow-xl border-0 cursor-pointer transition-transform transition-shadow duration-150 ease-out;
 }
 
 .register-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.65);
+  @apply -translate-y-px shadow-2xl;
 }
 
 .register-submit:disabled {
-  @apply opacity-60 cursor-not-allowed;
-  box-shadow: none;
+  @apply opacity-60 cursor-not-allowed shadow-none translate-y-0;
 }
 
 .register-small-text {
@@ -256,101 +249,55 @@
   }
 }
 
+/* success modal – הכל עם Tailwind דרך @apply */
 
 .success-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
+  @apply fixed inset-0 flex items-center justify-center bg-slate-900/80 backdrop-blur-md z-[9999];
 }
 
 .success-card {
-  background: #020617;
-  border-radius: 18px;
-  padding: 28px 32px;
-  max-width: 460px;
-  width: 90%;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  text-align: center;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  @apply bg-slate-950 rounded-2xl px-8 py-7 max-w-lg w-[90%] text-center shadow-2xl border border-sky-400/40;
 }
 
 .success-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 14px;
-  border-radius: 999px;
-  border: 2px solid #4ade80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  color: #4ade80;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.16), transparent 60%);
+  @apply w-12 h-12 mx-auto mb-3.5 rounded-full border-2 border-emerald-400 flex items-center justify-center text-2xl text-emerald-400 bg-emerald-500/10;
 }
 
 .success-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 6px;
+  @apply text-xl font-bold mb-1.5;
 }
 
 .success-text {
-  font-size: 14px;
-  color: #e5e7eb;
-  margin-bottom: 20px;
+  @apply text-sm text-slate-200 mb-5;
 }
 
 .success-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 24px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.7);
-  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+  @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full border-0 bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-semibold text-sm cursor-pointer shadow-xl transition-transform transition-shadow duration-150 ease-out w-full;
 }
 
 .success-button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.8);
+  @apply -translate-y-px shadow-2xl;
 }
 
 .success-button:active {
-  transform: translateY(0);
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.6);
+  @apply translate-y-0 shadow-lg;
 }
 
 .success-inline-link {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #cbd5f5;
+  @apply mt-2.5 text-[13px] text-slate-300;
 }
 
 .success-link {
-  color: #38bdf8;
-  text-decoration: underline;
-  cursor: pointer;
+  @apply text-sky-300 underline cursor-pointer hover:text-sky-200;
 }
 
+/* כשsuccessToast מופעל, שאר הכרטיס מטושטש וקופא */
 
 .dimmed {
-  filter: blur(2px);
-  pointer-events: none;
-  user-select: none;
+  @apply blur-sm brightness-75 pointer-events-none select-none;
 }
 
+/* error summary + banner */
 
 .error-summary {
   @apply mb-3 rounded-2xl border border-rose-500/40 bg-rose-900/25 px-4 py-3 text-[11px] text-rose-100;
@@ -371,7 +318,7 @@
 /* סיסמא – עטיפה וכפתור Show */
 
 .password-wrapper {
-  @apply relative flex items-center;
+  @apply relative flex items-center w-full;
 }
 
 .password-wrapper input {
@@ -379,9 +326,5 @@
 }
 
 .password-toggle {
-  @apply absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-sky-300;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 2px 6px;
+  @apply absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-sky-300 bg-transparent border-0 cursor-pointer px-1.5 py-0.5;
 }

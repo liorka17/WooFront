@@ -60,6 +60,7 @@ export class RegisterComponent {                                                
       companyName: ["", [Validators.required]],                                       // שם חברה או צוות חובה
       phone: [""],                                                                    // טלפון רשות בלבד ללא ולידציה
       role: ["owner", [Validators.required]],                                         // תפקיד המשתמש ברירת מחדל owner חובה
+      storeName: ["", [Validators.required]],                                         // חדש  שם חנות שהמשתמש נותן
       storeUrl: ["", [Validators.required]],                                          // כתובת החנות חובה
       plan: ["starter", [Validators.required]],                                       // תוכנית ברירת מחדל starter חובה
       agree: [false, [Validators.requiredTrue]],                                      // חובה לסמן הסכמה לתנאים
@@ -91,6 +92,9 @@ export class RegisterComponent {                                                
       this.f["confirmPassword"].value !== this.f["password"].value                   // או אם הערך לא שווה לערך הסיסמא
     ) {
       errors.push("Passwords must match.");                                          // מוסיף שורה שהסיסמאות חייבות להיות זהות
+    }
+    if (this.f["storeName"].invalid) {                                                // אם שם החנות לא תקין
+      errors.push("Store name is required.");                                        // מוסיף שורה לשגיאה של Store Name
     }
     if (this.f["storeUrl"].invalid) {                                                 // אם כתובת החנות לא תקינה
       errors.push("Primary WooCommerce store URL is required.");                     // מוסיף שורה מתאימה
@@ -134,6 +138,7 @@ export class RegisterComponent {                                                
       email: this.f["email"].value.trim().toLowerCase(),                              // אימייל אחרי טרים ואותיות קטנות
       password: this.f["password"].value,                                             // סיסמא כמו שהוזנה
       role: this.f["role"].value,                                                     // תפקיד שנבחר
+      storeName: this.f["storeName"].value.trim(),                                    // חדש  שם חנות ששומרים במסד
       storeUrl: this.f["storeUrl"].value.trim(),                                      // כתובת חנות אחרי טרים
       plan: this.f["plan"].value,                                                     // תוכנית שנבחרה
       // companyName + phone אפשר להוסיף לסכמה בבקאנד בהמשך לפי הצורך           // הערה מה לנהל בעתיד
@@ -160,6 +165,7 @@ export class RegisterComponent {                                                
               companyName: "",                                                       // מנקה שם חברה
               phone: "",                                                             // מנקה טלפון
               role: "owner",                                                         // מחזיר תפקיד לברירת מחדל
+              storeName: "",                                                         // מנקה שם חנות
               storeUrl: "",                                                          // מנקה כתובת חנות
               plan: "starter",                                                       // מחזיר תוכנית לברירת מחדל
               agree: false,                                                          // מוריד סימון תנאי שימוש

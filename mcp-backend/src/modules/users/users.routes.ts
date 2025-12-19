@@ -1,8 +1,6 @@
 import type {
   FastifyInstance,
   FastifyPluginAsync,
-  FastifyReply,
-  FastifyRequest,
 } from "fastify";
 import {
   registerUser,
@@ -27,6 +25,7 @@ const usersRoutes: FastifyPluginAsync = async (server: FastifyInstance) => {
         !body.password ||
         !body.role ||
         !body.storeUrl ||
+        !body.storeName || // חדש  חובת Store Name
         !body.plan
       ) {
         return reply.status(400).send({

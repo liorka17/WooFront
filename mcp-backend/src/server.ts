@@ -6,13 +6,25 @@ import dbPlugin from "./plugins/db";
 import usersRoutes from "./modules/users/users.routes";
 import authRoutes from "./modules/auth/auth.routes";
 
+function getCorsOrigins(): string[] {
+  const raw = (process.env.CORS_ORIGINS ?? "http://localhost:4200").trim();
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 async function buildServer() {
-  const server = Fastify({
-    logger: true,
-  });
+  const server = Fastify({ logger: true });
+
+  const allowedOrigins = getCorsOrigins();
 
   await server.register(cors, {
-    origin: ["http://localhost:4200"],
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"), false);
+    },
     credentials: true,
   });
 
