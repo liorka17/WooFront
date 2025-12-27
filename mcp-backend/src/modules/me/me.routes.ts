@@ -35,16 +35,22 @@ function normOrNull(v: unknown): string | null {                                
   return s.length ? s : null;                                                                            // אם ריק מחזיר null
 }                                                                                                        // סוף normOrNull
 
-function generateClientKeyHex(): string {                                                                // יצירת client_key בטוח
+function generateClientKeyPlain(): string {                                                              // יצירת client key להעתקה
   return crypto.randomBytes(32).toString("hex");                                                         // 64 תווים hex
-}                                                                                                        // סוף generateClientKeyHex
+}                                                                                                        // סוף generateClientKeyPlain
+
+function hashClientKey(plain: string): string {                                                          // hash דטרמיניסטי לשמירה במסד
+  const pepper = (process.env.CLIENT_KEY_PEPPER ?? "").trim();                                           // pepper מה env
+  if (!pepper) throw new Error("Missing CLIENT_KEY_PEPPER");                                             // אם חסר env לא מאפשר גנרוט
+  return crypto.createHmac("sha256", pepper).update(plain).digest("hex");                                 // HMAC SHA256
+}                                                                                                        // סוף hashClientKey
 
 export default async function meRoutes(server: FastifyInstance) {                                         // פלאגין ראוטים
 
   server.get(                                                                                            // שליפת אינטגרציות של המשתמש המחובר
     "/api/me/integrations",                                                                              // נתיב
     { preHandler: requireAuth },                                                                         // אימות JWT
-    async (request: FastifyRequest, reply: FastifyReply) => {                                            // handler
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {                             // handler
       const user = getUserFromRequest(request);                                                          // שליפת user
       if (!user) {                                                                                       // אם אין user
         reply.status(401).send({ ok: false, error: "Unauthorized" });                                    // 401
@@ -58,7 +64,7 @@ export default async function meRoutes(server: FastifyInstance) {               
       }                                                                                                  // סוף if
 
       const res = await server.db.query(                                                                 // שליפה מהמסד
-        `SELECT store_name, woo_url, woo_ck, woo_cs, client_key
+        `SELECT store_name, woo_url, woo_ck, woo_cs, client_key, client_key_hash
          FROM users
          WHERE id = $1`,
         [id]
@@ -74,7 +80,8 @@ export default async function meRoutes(server: FastifyInstance) {               
         woo_url: string | null;                                                                          // woo_url
         woo_ck: string | null;                                                                           // woo_ck
         woo_cs: string | null;                                                                           // woo_cs
-        client_key: string | null;                                                                       // client_key
+        client_key: string | null;                                                                       // client_key ישן אם קיים
+        client_key_hash: string | null;                                                                  // client_key_hash החדש
       };                                                                                                 // סוף טיפוס
 
       reply.send({                                                                                       // מחזיר לפרונט
@@ -84,7 +91,8 @@ export default async function meRoutes(server: FastifyInstance) {               
           woo_url: row.woo_url ?? "",                                                                    // כתובת
           has_woo_ck: !!row.woo_ck,                                                                      // האם קיים
           has_woo_cs: !!row.woo_cs,                                                                      // האם קיים
-          client_key: row.client_key ?? "",                                                              // מפתח אם קיים
+          client_key: row.client_key ?? "",                                                              // מצב מעבר כדי לא לשבור פרונט
+          has_client_key_hash: !!row.client_key_hash,                                                    // אינדיקציה שיש hash במסד
         },                                                                                               // סוף data
       });                                                                                                // סוף send
       return;                                                                                            // סיום
@@ -94,7 +102,7 @@ export default async function meRoutes(server: FastifyInstance) {               
   server.put<{ Body: UpdateIntegrationsBody }>(                                                          // חשוב לתת גנרי פה כדי ש request.body לא יהיה unknown
     "/api/me/integrations",                                                                              // נתיב
     { preHandler: requireAuth },                                                                         // אימות JWT
-    async (request, reply) => {                                                                          // handler
+    async (request, reply): Promise<void> => {                                                           // handler
       const user = getUserFromRequest(request);                                                          // שליפת user
       if (!user) {                                                                                       // אם אין user
         reply.status(401).send({ ok: false, error: "Unauthorized" });                                    // 401
@@ -131,7 +139,7 @@ export default async function meRoutes(server: FastifyInstance) {               
   server.post(                                                                                           // יצירת client key
     "/api/me/client-key",                                                                                // נתיב
     { preHandler: requireAuth },                                                                         // אימות JWT
-    async (request: FastifyRequest, reply: FastifyReply) => {                                            // handler
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {                             // handler
       const user = getUserFromRequest(request);                                                          // שליפת user
       if (!user) {                                                                                       // אם אין user
         reply.status(401).send({ ok: false, error: "Unauthorized" });                                    // 401
@@ -144,8 +152,8 @@ export default async function meRoutes(server: FastifyInstance) {               
         return;                                                                                          // סיום
       }                                                                                                  // סוף if
 
-      const res = await server.db.query(                                                                 // שליפה לפני גנרוט
-        `SELECT woo_url, woo_ck, woo_cs, client_key
+      const res = await server.db.query(                                                                 // שליפה מהמסד
+        `SELECT woo_url, woo_ck, woo_cs, client_key, client_key_hash
          FROM users
          WHERE id = $1`,
         [id]
@@ -160,11 +168,12 @@ export default async function meRoutes(server: FastifyInstance) {               
         woo_url: string | null;                                                                          // woo_url
         woo_ck: string | null;                                                                           // woo_ck
         woo_cs: string | null;                                                                           // woo_cs
-        client_key: string | null;                                                                       // client_key
+        client_key: string | null;                                                                       // client_key ישן אם קיים
+        client_key_hash: string | null;                                                                  // client_key_hash החדש אם קיים
       };                                                                                                 // סוף טיפוס
 
-      if (row.client_key) {                                                                              // אם כבר יש
-        reply.send({ ok: true, client_key: row.client_key });                                            // מחזיר
+      if (row.client_key) {                                                                              // מצב מעבר אם כבר יש מפתח ישן
+        reply.send({ ok: true, client_key: row.client_key });                                            // מחזיר אותו ולא מייצר חדש
         return;                                                                                          // סיום
       }                                                                                                  // סוף if
 
@@ -175,21 +184,31 @@ export default async function meRoutes(server: FastifyInstance) {               
       }                                                                                                  // סוף if
 
       for (let i = 0; i < 5; i++) {                                                                      // ניסיונות למניעת התנגשויות ייחודיות
-        const key = generateClientKeyHex();                                                              // יצירת מפתח
-        try {                                                                                            // try
-          const upd = await server.db.query(                                                             // עדכון במסד
+        let plain = "";                                                                                  // מפתח להעתקה
+        let hashed = "";                                                                                 // hash לשמירה במסד
+
+        try {                                                                                            // ניסיון לייצר מפתח ולחשב hash
+          plain = generateClientKeyPlain();                                                              // מפתח שנשלח לפרונט
+          hashed = hashClientKey(plain);                                                                 // hash קבוע לזיהוי בבוט
+        } catch (e: any) {                                                                               // אם חסר pepper או בעיית קריפטו
+          request.log.error(e);                                                                          // לוג
+          reply.status(500).send({ ok: false, error: "Server config error" });                           // 500
+          return;                                                                                        // סיום
+        }                                                                                                // סוף catch
+
+        try {                                                                                            // ניסיון לשמור במסד
+          await server.db.query(                                                                         // עדכון במסד
             `UPDATE users
-             SET client_key = $1
-             WHERE id = $2
-             RETURNING client_key`,
-            [key, id]
+             SET client_key_hash = $1
+             WHERE id = $2`,
+            [hashed, id]
           );                                                                                             // סוף query
 
-          reply.send({ ok: true, client_key: upd.rows[0].client_key });                                  // מחזיר מפתח
+          reply.send({ ok: true, client_key: plain });                                                   // מחזיר לפרונט את ה plain בלבד
           return;                                                                                        // סיום
         } catch (e: any) {                                                                               // catch
           const code = e?.code ?? "";                                                                    // קוד PG
-          if (code === "23505") continue;                                                                // כפילות unique
+          if (code === "23505") continue;                                                                // כפילות unique על hash
           request.log.error(e);                                                                          // לוג
           reply.status(500).send({ ok: false, error: "Server error" });                                  // 500
           return;                                                                                        // סיום
