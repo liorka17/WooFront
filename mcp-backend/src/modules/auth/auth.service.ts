@@ -1,76 +1,46 @@
-import type { Pool } from "pg";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import type { Secret, SignOptions } from "jsonwebtoken";
+import type { Pool } from "pg";                                                     // Pool של Postgres
+import bcrypt from "bcryptjs";                                                      // bcrypt
 
-const JWT_SECRET: Secret = (process.env.JWT_SECRET ?? "dev-secret").trim();
+export interface LoginInput {                                                       // טיפוס בקשת התחברות
+  email: string;                                                                    // אימייל
+  password: string;                                                                 // סיסמה
+}                                                                                   // סוף טיפוס
 
-// חשוב: expiresIn מקבל טיפוס מיוחד, לא string כללי
-const JWT_EXPIRES_IN: SignOptions["expiresIn"] =
-  (process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"]) ?? "1h";
+export interface JwtUserPayload {                                                   // payload שנכניס ל JWT
+  id: string;                                                                       // מזהה כ string כדי להתאים למה שיש אצלך
+  email: string;                                                                    // אימייל
+  role: "owner" | "agency" | "developer" | "admin";                                 // תפקידים
+}                                                                                   // סוף טיפוס
 
-export interface LoginInput {
-  email: string;
-  password: string;
-}
+export async function loginUser(pool: Pool, body: LoginInput) {                     // פונקציה שמוודאת משתמש וסיסמה
+  const email = body.email.toLowerCase().trim();                                    // נרמול אימייל
 
-export interface JwtUserPayload {
-  id: number;
-  email: string;
-  role: "owner" | "agency" | "developer" | "admin";
-}
+  const res = await pool.query(                                                     // שאילתא למסד
+    "SELECT id, email, password_hash, role FROM users WHERE email = $1",            // שליפה
+    [email]                                                                         // פרמטר
+  );                                                                                // סוף query
 
-export function signToken(payload: JwtUserPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-}
+  if (!res.rowCount) {                                                              // אם לא נמצא
+    return { ok: false as const, status: 401 as const, error: "Invalid email or password" }; // שגיאה
+  }                                                                                 // סוף תנאי
 
-export function verifyToken(token: string): JwtUserPayload {
-  return jwt.verify(token, JWT_SECRET) as JwtUserPayload;
-}
+  const user = res.rows[0];                                                         // המשתמש שנמצא
 
-export async function loginUser(pool: Pool, body: LoginInput) {
-  const email = body.email.toLowerCase().trim();
+  const isValid = await bcrypt.compare(body.password, user.password_hash);          // בדיקת סיסמה
+  if (!isValid) {                                                                   // אם לא תקין
+    return { ok: false as const, status: 401 as const, error: "Invalid email or password" }; // שגיאה
+  }                                                                                 // סוף תנאי
 
-  const res = await pool.query(
-    "SELECT id, email, password_hash, role FROM users WHERE email = $1",
-    [email]
-  );
+  const payload: JwtUserPayload = {                                                 // יצירת payload ל JWT
+    id: String(user.id),                                                            // מזהה
+    email: String(user.email),                                                      // אימייל
+    role: user.role as JwtUserPayload["role"],                                      // תפקיד
+  };                                                                                // סוף payload
 
-  if (res.rowCount === 0) {
-    return {
-      ok: false as const,
-      status: 401 as const,
-      error: "Invalid email or password",
-    };
-  }
-
-  const user = res.rows[0];
-
-  const isValid = await bcrypt.compare(body.password, user.password_hash);
-  if (!isValid) {
-    return {
-      ok: false as const,
-      status: 401 as const,
-      error: "Invalid email or password",
-    };
-  }
-
-  const payload: JwtUserPayload = {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  };
-
-  const token = signToken(payload);
-
-  return {
-    ok: true as const,
-    status: 200 as const,
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    },
-  };
-}
+  return {                                                                          // מחזיר נתונים ל route כדי שיחתום עם server.jwt.sign
+    ok: true as const,                                                              // הצלחה
+    status: 200 as const,                                                           // סטטוס
+    payload,                                                                        // payload לחתימה
+    user: { id: String(user.id), email: String(user.email), role: String(user.role) }, // user לתצוגה
+  };                                                                                // סוף return
+}                                                                                   // סוף loginUser

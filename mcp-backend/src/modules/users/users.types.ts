@@ -26,7 +26,7 @@ export interface UserDto {
   email: string;
   role: string;
   storeUrl: string;
-  storeName: string; // חדש  נשלח ל UI כדי להציג בדשבורד
+  storeName: string; 
   plan: string;
   isEmailVerified: boolean;
   createdAt: string;

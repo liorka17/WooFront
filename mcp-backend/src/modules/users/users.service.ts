@@ -9,7 +9,7 @@ function mapRowToUserDto(row: any): UserDto {
     email: row.email,
     role: row.role,
     storeUrl: row.store_url,
-    storeName: row.store_name, // חדש  ממפה את שם החנות מהעמודה החדשה
+    storeName: row.store_name, 
     plan: row.plan,
     isEmailVerified: row.is_email_verified,
     createdAt: row.created_at,
@@ -45,7 +45,7 @@ export async function registerUser(
       passwordHash,
       body.role,
       body.storeUrl,
-      body.storeName, // חדש  נשמר במסד נתונים
+      body.storeName, 
       body.plan,
     ]
   );

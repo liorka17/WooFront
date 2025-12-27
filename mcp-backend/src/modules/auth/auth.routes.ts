@@ -1,56 +1,39 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { loginUser,type LoginInput, verifyToken, type JwtUserPayload,} from "./auth.service";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";       // טיפוסים
+import { loginUser, type LoginInput } from "./auth.service";                        // שירות login
 
-export default async function authRoutes(server: FastifyInstance) {
-  // POST /api/auth/login
-  server.post(
-    "/api/auth/login",
-    async (
-      request: FastifyRequest<{ Body: LoginInput }>,
-      reply: FastifyReply
-    ) => {
-      try {
-        const result = await loginUser(server.db, request.body);
+export default async function authRoutes(server: FastifyInstance) {                 // פלאגין ראוטים
 
-        return reply.status(result.status).send(result);
-      } catch (err) {
-        request.log.error(err);
-        return reply.status(500).send({
-          ok: false,
-          error: "Server error",
-        });
-      }
-    }
-  );
+  server.post(                                                                      // POST login
+    "/api/auth/login",                                                              // נתיב
+    async (request: FastifyRequest<{ Body: LoginInput }>, reply: FastifyReply) => { // handler
+      try {                                                                         // try
+        const result = await loginUser(server.db, request.body);                    // אימות מול DB
+        if (!result.ok) return reply.status(result.status).send(result);            // אם כשל מחזיר כמו שהוא
 
-  // GET /api/auth/me  – בדיקת טוקן והחזרת המשתמש מה JWT
-  server.get(
-    "/api/auth/me",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const authHeader = request.headers.authorization || "";
-        const [, token] = authHeader.split(" ");
+        const token = server.jwt.sign(result.payload);                              // חתימה עם fastify jwt בלבד
 
-        if (!token) {
-          return reply.status(401).send({
-            ok: false,
-            error: "Missing or invalid Authorization header",
-          });
-        }
+        return reply.status(200).send({                                             // תשובה
+          ok: true,                                                                 // ok
+          token,                                                                    // token
+          user: result.user,                                                        // user
+        });                                                                         // סוף send
+      } catch (err) {                                                               // catch
+        request.log.error(err);                                                     // לוג
+        return reply.status(500).send({ ok: false, error: "Server error" });        // שגיאה
+      }                                                                             // סוף catch
+    }                                                                               // סוף handler
+  );                                                                                // סוף route
 
-        const payload = verifyToken(token) as JwtUserPayload;
-
-        return reply.status(200).send({
-          ok: true,
-          user: payload,
-        });
-      } catch (err) {
-        request.log.error(err);
-        return reply.status(401).send({
-          ok: false,
-          error: "Invalid or expired token",
-        });
-      }
-    }
-  );
-}
+  server.get(                                                                       // GET me
+    "/api/auth/me",                                                                 // נתיב
+    async (request: FastifyRequest, reply: FastifyReply) => {                       // handler
+      try {                                                                         // try
+        await (request as any).jwtVerify();                                         // אימות עם fastify jwt
+        return reply.status(200).send({ ok: true, user: (request as any).user });   // מחזיר את user מה JWT
+      } catch (err) {                                                               // catch
+        request.log.error(err);                                                     // לוג
+        return reply.status(401).send({ ok: false, error: "Unauthorized" });        // 401
+      }                                                                             // סוף catch
+    }                                                                               // סוף handler
+  );                                                                                // סוף route
+}                                                                                   // סוף authRoutes
