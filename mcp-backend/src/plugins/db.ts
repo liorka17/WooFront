@@ -45,6 +45,15 @@ async function connectPool(): Promise<Pool> {                                   
         connectionTimeoutMillis: 10_000,                                            // זמן המתנה לפתיחת חיבור
       });                                                                           // סוף הגדרה
 
+  pool.on("connect", (client) => {                                                  // בכל חיבור חדש למסד
+    client.query("SET statement_timeout TO 8000").catch(() => {});                  // מגביל שאילתות כדי שלא תקבל Pending לנצח
+    client.query("SET idle_in_transaction_session_timeout TO 8000").catch(() => {});// מונע טרנזקציות תקועות
+  });                                                                               // סוף connect hook
+
+  pool.on("error", (err) => {                                                      // האזנה לשגיאות ברקע של pool
+    console.error("PG pool error:", err);                                           // הדפסה ברורה לקונסול כדי לא לפספס תקיעות
+  });                                                                               // סוף error hook
+
   await pool.query("SELECT 1");                                                     // בדיקת חיבור מיידית כדי ליפול מוקדם אם יש בעיה
   return pool;                                                                      // מחזיר את ה pool
 }                                                                                   // סוף פונקציה
