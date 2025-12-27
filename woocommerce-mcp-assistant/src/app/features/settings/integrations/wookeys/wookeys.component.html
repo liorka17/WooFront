@@ -1,0 +1,70 @@
+<div class="wookeys-page">
+  <div class="wookeys-shell">
+    <div class="wookeys-card">
+      <div class="wookeys-head">
+        <div>
+          <h1 class="wookeys-title">Integrations</h1>
+          <p class="wookeys-subtitle">Connect your WooCommerce store and generate a client key</p>
+        </div>
+
+        <div class="wookeys-actions">
+          <button class="wookeys-btn" type="button" (click)="onUpdate()" [disabled]="loading">
+            Update
+          </button>
+
+          <button
+            class="wookeys-btn wookeys-btn-secondary"
+            type="button"
+            (click)="onGenerate()"
+            [disabled]="loading || !canGenerate()"
+          >
+            Generate client key
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="wookeys-banner wookeys-banner-error">{{ error }}</div>
+      <div *ngIf="success" class="wookeys-banner wookeys-banner-success">{{ success }}</div>
+
+      <form class="wookeys-form" [formGroup]="form" (submit)="$event.preventDefault()">
+        <div class="wookeys-row">
+          <div class="wookeys-field">
+            <label>Store name</label>
+            <input type="text" formControlName="store_name" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div class="wookeys-row">
+          <div class="wookeys-field">
+            <label>Woo url</label>
+            <input type="text" formControlName="woo_url" placeholder="https://yourstore.com" />
+          </div>
+        </div>
+
+        <div class="wookeys-row wookeys-row-3">
+          <div class="wookeys-field">
+            <label>Woo ck</label>
+            <input type="password" formControlName="woo_ck" placeholder="Consumer key" />
+          </div>
+
+          <div class="wookeys-field">
+            <label>Woo cs</label>
+            <input type="password" formControlName="woo_cs" placeholder="Consumer secret" />
+          </div>
+        </div>
+
+        <div *ngIf="clientKey" class="wookeys-keybox">
+          <div class="wookeys-keybox-top">
+            <div class="wookeys-keybox-title">Client key</div>
+            <button type="button" class="wookeys-link" (click)="copyKey()">Copy</button>
+          </div>
+          <div class="wookeys-keybox-value">{{ clientKey }}</div>
+        </div>
+      </form>
+
+      <div class="wookeys-note">
+        The client key is used inside the plugin so the bot can identify your account.
+      </div>
+    </div>
+  </div>
+</div>

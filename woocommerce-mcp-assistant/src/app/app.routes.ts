@@ -72,6 +72,14 @@ export const routes: Routes = [                                                 
           import("./features/settings/billing/billing.component")                                         // טוען את קובץ החיוב
             .then((m) => m.BillingComponent),                                                             // מחזיר את BillingComponent
       },
+      {
+        path: "integrations",
+        loadComponent: () =>
+          import("./features/settings/integrations/wookeys/wookeys.component").then(
+            (m) => m.WooKeysComponent
+          ),
+      }
+
     ],
   },
 
