@@ -1,21 +1,28 @@
-<div class="min-h-screen flex flex-col bg-slate-950 text-slate-50">
-  <header class="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
-    <div class="font-bold text-xl">WooCommerce MCP AI Assistant</div>
+<div class="min-h-screen flex flex-col bg-slate-950 text-slate-50">                 <!-- מעטפת -->
+  <header class="border-b border-slate-800 px-6 py-4 flex items-center justify-between"> <!-- header -->
+    <div class="font-bold text-xl">WooCommerce MCP AI Assistant</div>              <!-- לוגו -->
 
-    <nav class="flex gap-4">
-      <a routerLink="/" routerLinkActive="font-semibold">Home</a>
-      <a routerLink="/pricing" routerLinkActive="font-semibold">Pricing</a>
-      <a routerLink="/login" routerLinkActive="font-semibold">Login</a>
-      <a routerLink="/register" routerLinkActive="font-semibold">Register</a>
+    <nav class="flex gap-4 items-center">                                          <!-- תפריט -->
+      <a routerLink="/" routerLinkActive="font-semibold">Home</a>                  <!-- home -->
+      <a routerLink="/pricing" routerLinkActive="font-semibold">Pricing</a>        <!-- pricing -->
+
+      <ng-container *ngIf="!isAuthed()">                                           <!-- אם לא מחובר -->
+        <a routerLink="/login" routerLinkActive="font-semibold">Login</a>          <!-- login -->
+        <a routerLink="/register" routerLinkActive="font-semibold">Register</a>    <!-- register -->
+      </ng-container>
+
+      <ng-container *ngIf="isAuthed()">                                            <!-- אם מחובר -->
+        <a routerLink="/app/dashboard" routerLinkActive="font-semibold">My Dashboard</a>    <!-- מעבר לאפליקציה -->
+        <button class="text-sm text-slate-300 hover:text-slate-50" (click)="logout()">Logout</button> <!-- יציאה -->
+      </ng-container>
     </nav>
   </header>
 
-  <main class="flex-1">
-    <router-outlet></router-outlet>
+  <main class="flex-1">                                                            <!-- תוכן -->
+    <router-outlet></router-outlet>                                                <!-- ראוטים -->
   </main>
 
-  <footer class="border-t border-slate-800 px-6 py-3 text-sm text-slate-400">
-    © {{ currentYear }} WooCommerce MCP AI Assistant
+  <footer class="border-t border-slate-800 px-6 py-3 text-sm text-slate-400">      <!-- פוטר -->
+    © {{ currentYear }} WooCommerce MCP AI Assistant                               <!-- טקסט -->
   </footer>
-
 </div>

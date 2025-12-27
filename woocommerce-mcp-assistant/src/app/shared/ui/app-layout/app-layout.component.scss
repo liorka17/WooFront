@@ -1,0 +1,53 @@
+/* src/app/shared/ui/app-layout/app-layout.component.scss */
+
+.app-shell {
+  @apply min-h-screen flex bg-slate-950 text-slate-50;
+}
+
+.app-sidebar {
+  @apply w-72 border-r border-slate-800/80 bg-slate-950/80 backdrop-blur px-5 py-5 flex flex-col gap-4;
+}
+
+.app-sidebar-top {
+  @apply flex items-center justify-between;
+}
+
+.app-title {
+  @apply font-bold text-lg;
+}
+
+.app-logout {
+  @apply text-[11px] font-semibold text-sky-300 hover:text-sky-200 bg-transparent border-0 cursor-pointer;
+}
+
+.app-meta {
+  @apply text-[12px] text-slate-400;
+}
+
+.app-meta-strong {
+  @apply text-slate-200 font-semibold;
+}
+
+.app-nav {
+  @apply flex flex-col gap-2;
+}
+
+.app-nav-link {
+  @apply text-sm text-slate-200 hover:text-sky-200 transition;
+}
+
+.app-nav-active {
+  @apply font-semibold text-slate-50;
+}
+
+.app-nav-divider {
+  @apply my-2 h-px bg-slate-800;
+}
+
+.app-main {
+  @apply flex-1 p-6;
+  background-color: #020617;
+  background-image:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.10), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.10), transparent 60%);
+}

@@ -1,21 +1,32 @@
-<div class="min-h-screen flex bg-slate-950 text-slate-50">
-  <aside class="w-64 border-r border-slate-800 p-4 flex flex-col gap-4">
-    <div class="font-bold text-lg mb-4">Control Panel</div>
+<!-- src/app/shared/ui/app-layout/app-layout.component.html -->
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="app-sidebar-top">
+      <div class="app-title">Control Panel</div>
 
-    <nav class="flex flex-col gap-2">
-      <a routerLink="/app/dashboard" routerLinkActive="font-semibold">My Dashboard</a>
-      <a routerLink="/app/profile" routerLinkActive="font-semibold">Profile</a>
-      <a routerLink="/app/billing" routerLinkActive="font-semibold">Billing</a>
-      <a routerLink="/app/chat" routerLinkActive="font-semibold">Chat Demo</a>
+      <button class="app-logout" type="button" (click)="logout()">
+        Logout
+      </button>
+    </div>
 
-      <hr class="border-slate-800 my-2">
+    <div class="app-meta" *ngIf="user() as u">
+      Logged in as <span class="app-meta-strong">{{ u.email }}</span>
+    </div>
 
-      <a routerLink="/admin/overview" routerLinkActive="font-semibold">Admin Overview</a>
-      <a routerLink="/admin/users" routerLinkActive="font-semibold">Admin Users</a>
+    <nav class="app-nav">
+      <a class="app-nav-link" routerLink="/app/dashboard" routerLinkActive="app-nav-active">My Dashboard</a>
+      <a class="app-nav-link" routerLink="/app/profile" routerLinkActive="app-nav-active">Profile</a>
+      <a class="app-nav-link" routerLink="/app/billing" routerLinkActive="app-nav-active">Billing</a>
+      <a class="app-nav-link" routerLink="/app/chat" routerLinkActive="app-nav-active">Chat Demo</a>
+
+      <div class="app-nav-divider"></div>
+
+      <a *ngIf="isAdmin()" class="app-nav-link" routerLink="/admin/overview" routerLinkActive="app-nav-active">Admin Overview</a>
+      <a *ngIf="isAdmin()" class="app-nav-link" routerLink="/admin/users" routerLinkActive="app-nav-active">Admin Users</a>
     </nav>
   </aside>
 
-  <main class="flex-1 p-6">
+  <main class="app-main">
     <router-outlet></router-outlet>
   </main>
 </div>

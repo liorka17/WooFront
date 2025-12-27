@@ -1,1 +1,41 @@
-<p>users works!</p>
+<!-- src/app/features/admin/users/users.component.html -->
+<section class="admin-users">
+  <div class="admin-users-top">
+    <div>
+      <h1 class="admin-users-title">Admin Users</h1>
+      <p class="admin-users-subtitle">Manage users from the database</p>
+    </div>
+
+    <button class="admin-users-refresh" type="button" (click)="loadUsers()" [disabled]="loading">
+      Refresh
+    </button>
+  </div>
+
+  <div *ngIf="error" class="admin-users-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="admin-users-loading">
+    Loading users
+  </div>
+
+  <div *ngIf="!loading && !error && users.length === 0" class="admin-users-empty">
+    No users found
+  </div>
+
+  <div *ngIf="!loading && !error && users.length > 0" class="admin-users-grid">
+    <div class="user-card" *ngFor="let u of users">
+      <div class="user-card-head">
+        <div class="user-name">{{ u.fullName }}</div>
+        <div class="user-role">{{ u.role }}</div>
+      </div>
+
+      <div class="user-lines">
+        <div class="user-line"><span class="k">Email</span><span class="v">{{ u.email }}</span></div>
+        <div class="user-line"><span class="k">Store</span><span class="v">{{ u.storeName }}</span></div>
+        <div class="user-line"><span class="k">Plan</span><span class="v">{{ u.plan }}</span></div>
+        <div class="user-line"><span class="k">Url</span><span class="v">{{ u.storeUrl }}</span></div>
+      </div>
+    </div>
+  </div>
+</section>

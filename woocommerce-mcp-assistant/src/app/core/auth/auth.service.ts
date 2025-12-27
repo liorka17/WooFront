@@ -1,35 +1,39 @@
-import { Injectable, computed, signal } from "@angular/core";                    // ייבוא דקורטור Injectable וסיגנלים לניהול סטייט של התחברות
-import { HttpClient } from "@angular/common/http";                               // ייבוא HttpClient לביצוע קריאות HTTP לשרת
-import { Router } from "@angular/router";                                        // ייבוא Router לניווט בין מסכים אחרי התחברות או יציאה
-import { tap } from "rxjs/operators";                                            // ייבוא האופרטור tap לצורך תופעות לוואי על ה Observable
-import { Observable } from "rxjs";                                               // ייבוא טיפוס Observable שמייצג זרם אסינכרוני
+import { Injectable, computed, signal } from "@angular/core";                      // ייבוא Injectable וסיגנלים לניהול סטייט
+import { HttpClient } from "@angular/common/http";                                 // ייבוא HttpClient לביצוע בקשות לשרת
+import { Router } from "@angular/router";                                          // ייבוא Router לניווט אחרי התחברות או יציאה
+import { tap } from "rxjs/operators";                                              // ייבוא tap לתופעות לוואי על תשובת השרת
+import { Observable } from "rxjs";                                                 // ייבוא Observable לייצוג זרם אסינכרוני
+import { environment } from "../../../environments/environment";                   // ייבוא הגדרות סביבה כדי לקבל apiBase
 
-export interface AuthUser {                                                      // ממשק שמייצג משתמש מחובר בצד לקוח
-  id: number;                                                                    // מזהה משתמש ייחודי
-  email: string;                                                                 // כתובת אימייל של המשתמש
-  role: "owner" | "agency" | "developer" | "admin";                              // תפקיד המשתמש במערכת
-}
+export interface AuthUser {                                                        // ממשק שמייצג משתמש מחובר
+  id: number;                                                                      // מזהה משתמש
+  email: string;                                                                   // אימייל משתמש
+  role: "owner" | "agency" | "developer" | "admin";                                // תפקיד משתמש
+}                                                                                  // סוף ממשק AuthUser
 
-export interface LoginResponse {                                                 // ממשק לתשובת התחברות מהשרת
-  ok: boolean;                                                                   // האם הבקשה הצליחה או נכשלה
-  status: number;                                                                // קוד סטטוס HTTP שהשרת החזיר
-  token?: string;                                                                // טוקן JWT שהשרת מחזיר במקרה של הצלחה
-  user?: {                                                                       // אובייקט משתמש שמתקבל מהשרת במקרה של הצלחה
-    id: number;                                                                  // מזהה המשתמש
-    email: string;                                                               // אימייל המשתמש
-    role: "owner" | "agency" | "developer" | "admin";                            // תפקיד המשתמש
-  };                                                                             // סיום הגדרת אובייקט user
-  error?: string;                                                                // הודעת שגיאה טקסטואלית במקרה של כישלון
-}
+export interface LoginResponse {                                                   // ממשק לתשובת התחברות
+  ok: boolean;                                                                     // האם הצליח
+  status: number;                                                                  // קוד סטטוס
+  token?: string;                                                                  // טוקן במקרה הצלחה
+  user?: {                                                                         // אובייקט משתמש במקרה הצלחה
+    id: number;                                                                    // מזהה משתמש
+    email: string;                                                                 // אימייל
+    role: "owner" | "agency" | "developer" | "admin";                              // תפקיד
+  };                                                                               // סוף user
+  error?: string;                                                                  // שגיאה במקרה כישלון
+}                                                                                  // סוף ממשק LoginResponse
 
 export interface RegisterRequest {                                               // ממשק לגוף בקשת רישום שנשלחת מהפרונט לשרת
   fullName: string;                                                              // שם מלא של המשתמש החדש
   email: string;                                                                 // כתובת האימייל של המשתמש החדש
   password: string;                                                              // סיסמה שהמשתמש בחר
   role: "owner" | "agency" | "developer";                                        // תפקיד המשתמש כפי שנבחר בטופס
+  storeName: string;                                                             // שם החנות חובה כי הבקאנד דורש
   storeUrl: string;                                                              // כתובת חנות WooCommerce ראשית
   plan: "starter" | "pro";                                                       // תכנית המנוי ההתחלתית
-}
+  companyName?: string;                                                          // אופציונלי לעתיד אם תוסיף בבקאנד
+  phone?: string;                                                                // אופציונלי לעתיד אם תוסיף בבקאנד
+}                                                                                // סוף ממשק RegisterRequest
 
 export interface RegisterResponse {                                              // ממשק לתגובה שמחזיר השרת לאחר רישום
   ok: boolean;                                                                   // האם הרישום הצליח
@@ -39,83 +43,105 @@ export interface RegisterResponse {                                             
     email: string;                                                               // אימייל כפי ששמור בשרת
     role: string;                                                                // תפקיד המשתמש כפי ששמור בשרת
     storeUrl: string;                                                            // כתובת החנות כפי ששמורה בשרת
+    storeName: string;                                                           // שם החנות כפי ששמור בשרת
     plan: string;                                                                // תכנית המנוי כפי ששמורה בשרת
-  };                                                                             // סיום אובייקט user
+  };                                                                             // סוף אובייקט user
   error?: string;                                                                // הודעת שגיאה במקרה של כישלון הרישום
-}
+}                                                                                // סוף ממשק RegisterResponse
+                                                                                 // סוף ממשק RegisterResponse
 
-@Injectable({                                                                    // דקורטור שמגדיר את השירות כ Injectable
-  providedIn: "root",                                                            // הופך את השירות לגלובלי לכל האפליקציה
-})
-export class AuthService {                                                       // מחלקת השירות שאחראית על התחברות ורישום
-  private baseUrl = "http://localhost:3000";                                     // בסיס כתובת של שרת הבקאנד
+@Injectable({ providedIn: "root" })                                                 // רישום שירות גלובלי
+export class AuthService {                                                         // מחלקת שירות Auth
+  private apiBase = environment.apiBase;                                           // שמירת בסיס הכתובת מה environment
 
-  private tokenSignal = signal<string | null>(null);                             // סיגנל שמחזיק את הטוקן הנוכחי בזיכרון
-  private userSignal = signal<AuthUser | null>(null);                            // סיגנל שמחזיק את פרטי המשתמש המחובר
+  private tokenSignal = signal<string | null>(null);                               // סיגנל לטוקן
+  private userSignal = signal<AuthUser | null>(null);                              // סיגנל למשתמש
 
-  readonly user = computed(() => this.userSignal());                             // מאפיין לקריאה בלבד שמחזיר את המשתמש המחובר
-  readonly isAuthenticated = computed(() => !!this.tokenSignal());               // מאפיין לקריאה בלבד שבודק האם יש טוקן שמור
+readonly user = computed<AuthUser | null>(() => this.userSignal());                // טיפוס מפורש כדי שלא יצא unknown
+readonly isAuthenticated = computed<boolean>(() => !!this.tokenSignal());           // טיפוס מפורש לבוליאן
 
-  constructor(private http: HttpClient, private router: Router) {                // בנאי שמזריק HttpClient ו Router לשירות
-    const storedToken = localStorage.getItem("mcp_token");                       // ניסיון לטעון טוקן שנשמר בלוקאל סטורג'
-    const storedUser = localStorage.getItem("mcp_user");                         // ניסיון לטעון פרטי משתמש שנשמרו בלוקאל סטורג'
 
-    if (storedToken) {                                                           // אם נמצא טוקן שמור
-      this.tokenSignal.set(storedToken);                                         // מעדכן את סיגנל הטוקן מהערך השמור
-    }
+  constructor(private http: HttpClient, private router: Router) {                  // בנאי עם HttpClient ו Router
+    const storedToken = localStorage.getItem("mcp_token");                         // קריאת טוקן מהדפדפן
+    const storedUser = localStorage.getItem("mcp_user");                           // קריאת משתמש מהדפדפן
 
-    if (storedUser) {                                                            // אם נמצאו פרטי משתמש שמורים
-      try {                                                                      // ניסיון לפרסר את המחרוזת השמורה כ JSON
-        this.userSignal.set(JSON.parse(storedUser));                             // שומר את אובייקט המשתמש בסיגנל
-      } catch {                                                                  // במקרה של שגיאת פרסור
-        this.userSignal.set(null);                                               // מנקה את סיגנל המשתמש כדי לא לעבוד עם נתון פגום
-      }
-    }
-  }
+    if (storedToken) {                                                             // אם יש טוקן
+      this.tokenSignal.set(storedToken);                                           // שמירת הטוקן בסיגנל
+    }                                                                              // סוף תנאי טוקן
 
-  login(email: string, password: string): Observable<LoginResponse> {            // פונקציה שמבצעת התחברות לשרת
-    return this.http                                                             // החזרת ה Observable שנוצר מקריאת HTTP
-      .post<LoginResponse>(                                                      // ביצוע בקשת POST לשרת עם טיפוס תגובה LoginResponse
-        `${this.baseUrl}/api/auth/login`,                                        // כתובת הנתיב של התחברות בבקאנד
-        { email, password }                                                      // גוף הבקשה שמכיל אימייל וסיסמה
-      )                                                                          // סיום קריאת POST
-      .pipe(                                                                     // הפעלת צינור אופרטורים על ה Observable
-        tap((res) => {                                                           // אופרטור tap שמבצע לוגיקה צדדית על התשובה
-          if (res.ok && res.token && res.user) {                                 // בדיקה שהתשובה הצליחה ויש גם token וגם user
-            this.setAuthState(res.token, {                                       // שמירת מצב ההתחברות עם הטוקן והמשתמש
-              id: res.user.id,                                                   // שמירת מזהה המשתמש
-              email: res.user.email,                                             // שמירת כתובת האימייל
-              role: res.user.role,                                               // שמירת תפקיד המשתמש
-            });                                                                  // סיום קריאת setAuthState
-          }                                                                      // סיום תנאי בדיקת הצלחה
-        })                                                                       // סיום אופרטור tap
-      );                                                                         // סיום pipe והחזרת ה Observable המעובד
-  }
+    if (storedUser) {                                                              // אם יש משתמש
+      try {                                                                        // ניסיון המרה ל JSON
+        this.userSignal.set(JSON.parse(storedUser));                               // שמירת המשתמש בסיגנל
+      } catch {                                                                    // אם ההמרה נכשלה
+        this.userSignal.set(null);                                                 // ניקוי משתמש פגום
+      }                                                                            // סוף catch
+    }                                                                              // סוף תנאי משתמש
+  }                                                                                // סוף בנאי
 
-  register(payload: RegisterRequest): Observable<RegisterResponse> {             // פונקציה שמבצעת רישום משתמש חדש בבקאנד
-    return this.http                                                             // החזרת ה Observable שנוצר מקריאת HTTP
-      .post<RegisterResponse>(                                                   // ביצוע בקשת POST עם טיפוס תגובה RegisterResponse
-        `${this.baseUrl}/api/auth/register`,                                     // כתובת הנתיב של רישום בבקאנד
-        payload                                                                  // גוף הבקשה הכולל פרטי המשתמש החדש
-      );                                                                         // סיום קריאת POST
-  }
+  login(email: string, password: string): Observable<LoginResponse> {              // פונקציית התחברות
+    return this.http                                                               // התחלת בקשת HTTP
+      .post<LoginResponse>(                                                        // POST עם טיפוס תשובה
+        `${this.apiBase}/auth/login`,                                              // נתיב יחסי דרך apiBase
+        { email, password }                                                        // גוף הבקשה
+      )                                                                            // סוף post
+      .pipe(                                                                       // הפעלת pipe
+        tap((res) => {                                                             // tap על התשובה
+          if (res.ok && res.token && res.user) {                                   // אם הצליח ויש נתונים
+            this.setAuthState(res.token, {                                         // שמירת מצב התחברות
+              id: res.user.id,                                                     // מזהה
+              email: res.user.email,                                               // אימייל
+              role: res.user.role,                                                 // תפקיד
+            });                                                                    // סוף setAuthState
+          }                                                                        // סוף תנאי הצלחה
+        })                                                                         // סוף tap
+      );                                                                           // סוף pipe
+  }                                                                                // סוף login
 
-  logout(): void {                                                               // פונקציה שמבצעת יציאה של המשתמש מהמערכת
-    this.tokenSignal.set(null);                                                  // ניקוי הטוקן מהסיגנל בזיכרון
-    this.userSignal.set(null);                                                   // ניקוי פרטי המשתמש מהסיגנל בזיכרון
-    localStorage.removeItem("mcp_token");                                        // מחיקת הטוקן מה Local Storage של הדפדפן
-    localStorage.removeItem("mcp_user");                                         // מחיקת פרטי המשתמש מה Local Storage של הדפדפן
-    this.router.navigate(["/login"]);                                            // ניווט למסך התחברות לאחר יציאה
-  }
+  register(payload: RegisterRequest): Observable<RegisterResponse> {               // פונקציית הרשמה
+    return this.http                                                               // התחלת בקשת HTTP
+      .post<RegisterResponse>(                                                     // POST עם טיפוס תשובה
+        `${this.apiBase}/auth/register`,                                           // נתיב יחסי דרך apiBase
+        payload                                                                    // גוף הבקשה
+      );                                                                           // סוף post
+  }                                                                                // סוף register
 
-  private setAuthState(token: string, user: AuthUser): void {                    // פונקציה פנימית שמעדכנת את מצב ההתחברות
-    this.tokenSignal.set(token);                                                 // שמירת הטוקן בסיגנל בזיכרון
-    this.userSignal.set(user);                                                   // שמירת פרטי המשתמש בסיגנל בזיכרון
-    localStorage.setItem("mcp_token", token);                                    // שמירת הטוקן גם ב Local Storage לצורך שימור התחברות
-    localStorage.setItem("mcp_user", JSON.stringify(user));                      // שמירת פרטי המשתמש כמחרוזת JSON ב Local Storage
-  }
+  logout(): void {                                                                 // פונקציית יציאה
+    this.tokenSignal.set(null);                                                    // ניקוי טוקן
+    this.userSignal.set(null);                                                     // ניקוי משתמש
+    localStorage.removeItem("mcp_token");                                          // מחיקת טוקן מהדפדפן
+    localStorage.removeItem("mcp_user");                                           // מחיקת משתמש מהדפדפן
+    this.router.navigate(["/login"]);                                              // ניווט למסך התחברות
+  }                                                                                // סוף logout
 
-  getToken(): string | null {                                                    // פונקציה שמחזירה את הטוקן הנוכחי אם קיים
-    return this.tokenSignal();                                                   // קריאת ערך הסיגנל שמחזיק את הטוקן
-  }
-}
+  private setAuthState(token: string, user: AuthUser): void {                      // פונקציה פנימית לשמירת מצב
+    this.tokenSignal.set(token);                                                   // שמירת טוקן בסיגנל
+    this.userSignal.set(user);                                                     // שמירת משתמש בסיגנל
+    localStorage.setItem("mcp_token", token);                                      // שמירת טוקן בדפדפן
+    localStorage.setItem("mcp_user", JSON.stringify(user));                        // שמירת משתמש בדפדפן
+  }                                                                                // סוף setAuthState
+
+  getToken(): string | null {                                                      // פונקציה שמחזירה טוקן
+    return this.tokenSignal();                                                     // החזרת ערך הטוקן
+  }    
+  me(): Observable<{ ok: boolean; user?: AuthUser; error?: string }> {               // פונקציה שמביאה משתמש מהשרת לפי הטוקן
+  return this.http                                                                 // שימוש ב HttpClient
+    .get<{ ok: boolean; user?: AuthUser; error?: string }>(                        // קריאת GET עם טיפוס תשובה
+      `${this.apiBase}/auth/me`                                                    // נתיב me
+    )                                                                              // סוף get
+    .pipe(                                                                         // הפעלת pipe
+      tap((res) => {                                                               // tap לעדכון סטייט
+        if (res.ok && res.user) {                                                  // אם הצליח ויש user
+          this.userSignal.set(res.user);                                           // עדכון הסיגנל של המשתמש
+          localStorage.setItem("mcp_user", JSON.stringify(res.user));              // עדכון המשתמש בדפדפן
+        }                                                                          // סוף תנאי
+      })                                                                           // סוף tap
+    );                                                                             // סוף pipe
+}                                                                                  // סוף me
+
+             
+                                                                               // סוף פונקציה
+                     
+                                            // סוף getToken
+}                                                                                  // סוף AuthService
+
+
