@@ -5,6 +5,7 @@ import jwt from "@fastify/jwt";                                                 
 import dbPlugin from "./plugins/db";                                                // DB plugin
 import usersRoutes from "./modules/users/users.routes";                             // Users routes
 import authRoutes from "./modules/auth/auth.routes";                                // Auth routes
+import meRoutes from "./modules/me/me.routes";                                      // Me routes
 
 function getCorsOrigins(): string[] {                                               // קריאת Origins מותרים
   const raw = (process.env.CORS_ORIGINS ?? "http://localhost:4200").trim();          // ברירת מחדל ל Angular
@@ -15,7 +16,7 @@ function getCorsOrigins(): string[] {                                           
 }                                                                                   // סוף פונקציה
 
 async function buildServer() {                                                      // בניית שרת
-  const server = Fastify({ logger: true, ignoreTrailingSlash: true });              // גם /api/users וגם /api/users/ יעבדו
+  const server = Fastify({ logger: true, ignoreTrailingSlash: true });              // מאפשר גם עם וגם בלי סלאש בסוף
 
   const allowedOrigins = getCorsOrigins();                                          // origins מותרים
 
@@ -29,7 +30,7 @@ async function buildServer() {                                                  
   });                                                                               // סוף CORS
 
   await server.register(jwt, {                                                      // רישום JWT
-    secret: (process.env.JWT_SECRET ?? "dev_secret_change_me").trim(),              // חשוב trim כדי לא לשבור חתימה ואימות
+    secret: (process.env.JWT_SECRET ?? "dev_secret_change_me").trim(),              // חשוב trim
     sign: { expiresIn: (process.env.JWT_EXPIRES_IN ?? "1h").trim() },               // תוקף
   });                                                                               // סוף JWT
 
@@ -37,9 +38,13 @@ async function buildServer() {                                                  
 
   await server.register(authRoutes);                                                // auth
   await server.register(usersRoutes);                                               // users
+  await server.register(meRoutes);                                                  // me
 
-  server.get("/health", async () => ({ ok: true }));                                // health ישן
+  server.get("/health", async () => ({ ok: true }));                                // health
   server.get("/api/health", async () => ({ ok: true }));                            // health דרך proxy
+
+  await server.ready();                                                            // רק אחרי שכל הראוטים נרשמו
+  server.printRoutes();                                                            // הדפסה לבדיקה
 
   return server;                                                                    // החזרת שרת
 }                                                                                   // סוף buildServer

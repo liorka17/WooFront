@@ -1,3 +1,5 @@
+// src/modules/auth/auth.service.ts
+
 import type { Pool } from "pg";                                                     // Pool של Postgres
 import bcrypt from "bcryptjs";                                                      // bcrypt
 
