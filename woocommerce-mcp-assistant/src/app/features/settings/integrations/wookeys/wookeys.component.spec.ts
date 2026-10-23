@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { WookeysComponent } from './wookeys.component';
+import { WooKeysComponent } from './wookeys.component';
 
 describe('WookeysComponent', () => {
-  let component: WookeysComponent;
-  let fixture: ComponentFixture<WookeysComponent>;
+  let component: WooKeysComponent;
+  let fixture: ComponentFixture<WooKeysComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WookeysComponent]
+      imports: [WooKeysComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(WookeysComponent);
+    fixture = TestBed.createComponent(WooKeysComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
